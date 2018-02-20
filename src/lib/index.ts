@@ -1,7 +1,12 @@
 'use strict'
 
-import { getIntFromPayload, getStringFromPayload } from './helper';
+import { parseStringFromBuffer, parseIntFromBuffer } from './bitsHelper';
 import { Formatter, VHF_CHANNEL } from './config';
+import {
+	getLatAndLng,
+	fetchSog,
+	fetchRateOfTurn
+} from './helper';
 
 interface Session {
 	formatter: Formatter,
@@ -11,9 +16,8 @@ interface Session {
 
 export class Decoder {
 	bitarray: Array<any>;
-	BITS: number = 6;
-	valid: boolean = false;
 	payload: any;
+	valid: boolean;
 
 	constructor(private _rawMessage: string) {
 		console.log(_rawMessage);
@@ -97,7 +101,8 @@ export class Decoder {
       this.payload = new Buffer(nmea[5]);
     } catch (err) {
        console.log('Error nmea[5]', nmea[5]);
-       console.log(err);
+			 console.error(err);
+			 throw new Error(err);
     }
 		const channel = VHF_CHANNEL[nmea[4]]; // vhf channel A/B
 
@@ -128,22 +133,50 @@ export class Decoder {
         let byte = this.payload[i];
 
         // check byte is not out of range
-        if ((byte < 0x30) || (byte > 0x77))  return;
-        if ((0x57 < byte) && (byte < 0x60))  return;
+        if ((byte < 0x30) || (byte > 0x77)) {
+					return;
+				}
+        if ((0x57 < byte) && (byte < 0x60)) {
+					return;
+				}
 
         // move from printable char to wacky AIS/IEC 6 bit representation
         byte += 0x28;
-        if(byte > 0x80)  byte += 0x20;
-        else             byte += 0x28;
+        if(byte > 0x80)  {
+					byte += 0x20;
+				} else {
+					byte += 0x28;
+				}
         this.bitarray[i]=byte;
     }
-		console.log(this.payload);
-		console.log(this.bitarray);
-    const aistype: number = getIntFromPayload(this.payload, 0,6);
-    const repeat : number = getIntFromPayload(this.payload, 6,2);
-    const immsi  : number = getIntFromPayload(this.payload, 8,30);
+
+    const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);
+    const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
+    const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
 	  const mmsi	 : string = ("000000000" + immsi).slice(-9);
 
-		console.log({ mmsi, aistype });
+		console.log({ mmsi, type: aisType });
+		if ([1,2,3].indexOf(aisType) !== -1) {
+			// parse type 1,2,3 message
+			const aisClass = 'A';
+			// Navigational status
+			const navStatus = parseIntFromBuffer(this.bitarray, 38, 4);
+			const { latitude, longitude, valid } = getLatAndLng(this.bitarray, aisType);
+			this.valid = valid;
+			const sog = fetchSog(this.bitarray, aisType);
+			const rot = fetchRateOfTurn(this.bitarray, aisType);
+			console.log({
+				sog,
+				valid: this.valid,
+				latitude,
+				longitude,
+				navStatus,
+				class: aisClass,
+				type: aisType,
+				rot
+			});
+		} else {
+			throw new Error(`AIS Type ${aisType} is not supported`);
+		}
 	}
 }

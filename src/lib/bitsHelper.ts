@@ -1,0 +1,57 @@
+'use strict';
+
+export function parseIntFromBuffer(bitArray: Array<number>, start: number, len: number): number {
+  var acc = 0;
+		var cp, cx,c0, cs;
+
+		for(var i=0 ; i<len ; i++)
+		{
+				acc  = acc << 1;
+				cp = Math.floor((start + i) / 6);
+				cx = bitArray[cp];
+				cs = 5 - ((start + i) % 6);
+				c0 = (cx >> cs) & 1;
+
+				acc |= c0;
+		}
+		return acc;
+}
+
+export function parseStringFromBuffer(bitArray: Array<number>, start: number, len: number): string {
+  // TODO: support extended messages
+  if (bitArray.length < (start + len) /6) {
+    throw new Error('Extended messages are not implemented');
+  }
+
+  let buffer = new Buffer(20);
+  let cp: number;
+  let cx: number;
+  let cs: number;
+  let c0: number;
+  let acc, k, i = 0;
+  while(i < len)
+  {
+     acc=0;
+     for(var j=0 ; j < 6 ; j++)
+     {
+        acc  = acc << 1;
+        cp =   Math.floor((start + i) / 6);
+        cx = this.bitarray[cp];
+        cs = 5 - ((start + i) % 6);
+        c0 = (cx >> (5 - ((start + i) % 6))) & 1;
+        acc |= c0;
+        i++;
+     }
+     buffer[k] = acc; // opencpn
+     if(acc < 0x20)  {
+       buffer[k] += 0x40;
+     } else {
+       buffer[k] = acc;  // opencpn enfoce (acc & 0x3f) ???
+     }
+     if (buffer[k] === 0x40) {
+       break; // name end with '@'
+     }
+     k++;
+  }
+  return buffer.toString('utf8', 0, k);
+}

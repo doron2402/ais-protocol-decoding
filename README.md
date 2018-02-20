@@ -7,6 +7,8 @@
 
 
  ### References:
+  - Gov:
+    - https://www.navcen.uscg.gov/?pageName=AISMessagesA
   - Gpsd:
     - http://catb.org/gpsd/AIVDM.html [best doc]
   - OpenCPN:
