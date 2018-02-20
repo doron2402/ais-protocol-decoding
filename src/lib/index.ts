@@ -1,14 +1,17 @@
 'use strict'
 
 import { parseStringFromBuffer, parseIntFromBuffer } from './bitsHelper';
+import { Position_Report_Class_A } from './interfaces/ais';
 import { Formatter, VHF_CHANNEL } from './config';
 import {
-	getLatAndLng,
+	decodePayloadToBitArray,
 	fetchSog,
 	fetchRateOfTurn,
-	decodePayloadToBitArray,
 	fetchCourseOverGround,
-	fetchHeading
+	fetchHeading,
+	getLatAndLng,
+	fetchAccuracy,
+	fetchNavigationStatus,
 } from './helper';
 
 interface Session {
@@ -139,28 +142,9 @@ export class Decoder {
 
 		console.log({ mmsi, type: aisType });
 		if ([1,2,3].indexOf(aisType) !== -1) {
-			// parse type 1,2,3 message
-			const aisClass = 'A';
-			// Navigational status
-			const navStatus = parseIntFromBuffer(this.bitarray, 38, 4);
-			const { latitude, longitude, valid } = getLatAndLng(this.bitarray, aisType);
-			this.valid = valid;
-			const sog = fetchSog(this.bitarray, aisType);
-			const rot = fetchRateOfTurn(this.bitarray, aisType);
-			const cog = fetchCourseOverGround(this.bitarray, aisType);
-			const hdg = fetchHeading(this.bitarray, aisType);
-			console.log({
-				sog,
-				valid: this.valid,
-				latitude,
-				longitude,
-				navStatus,
-				class: aisClass,
-				type: aisType,
-				rot,
-				cog,
-				hdg
-			});
+			const report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
+			console.log(report);
+
 		} else if (aisType === 18) {
 			const sog = fetchSog(this.bitarray, aisType);
 			console.log({ sog });
@@ -170,3 +154,38 @@ export class Decoder {
 		}
 	}
 }
+
+function parsePositionReportClassA(bitArray: Array<number>, aisType:number, repeat: number, mmsi: string): Position_Report_Class_A {
+	const aisClass:string = 'A';
+	// Navigational status
+	const navStatus = parseIntFromBuffer(bitArray, 38, 4);
+	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
+	const sog = fetchSog(bitArray, aisType);
+	const rot = fetchRateOfTurn(bitArray, aisType);
+	const cog = fetchCourseOverGround(bitArray, aisType);
+	const hdg = fetchHeading(bitArray, aisType);
+	const status = fetchNavigationStatus(bitArray, aisType);
+	const accuracy = fetchAccuracy(bitArray, aisType);
+	const utc:number = 0;
+	const maneuver: string = '0';
+	const raim: string = '0';
+
+	const report = {
+		valid,
+		repeat,
+		mmsi,
+		type: aisType,
+		status,
+		cog,
+		sog,
+		rot,
+		hdg,
+		lon: longitude,
+		lat: latitude,
+		accuracy,
+		utc,
+		maneuver,
+		raim,
+	};
+	return report;
+};

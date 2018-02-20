@@ -1,7 +1,7 @@
 'use strict'
 
-import { getManeuverIndicator, Precision, getMetaDataForAttributeByReport } from './config';
-import { parseIntFromBuffer } from './bitsHelper';
+import { getManeuverIndicator, Precision, getMetaDataForAttributeByReport, getNavStatus } from './config';
+import { parseIntFromBuffer, parseStringFromBuffer } from './bitsHelper';
 
 interface LatLngResponse {
   latitude: number,
@@ -163,5 +163,26 @@ export function fetchHeading(bitArray: Array<number>, aisType: number): number {
   }
   const hdg = Number(parseFloat(String(0.1 * _hdg)).toFixed(Precision));
   return hdg;
+}
+
+export function fetchNavigationStatus(bitArray: Array<number>, aisType: number): string {
+  const meta = getMetaDataForAttributeByReport(aisType)['status'];
+  const statusCode:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  return getNavStatus(statusCode);
+}
+
+export function fetchAccuracy(bitArray: Array<number>, aisType: number): number {
+  /**
+   * The position accuracy flag indicates the accuracy of the fix.
+   * A value of 1 indicates a DGPS-quality fix with an accuracy of < 10ms.
+   * 0, the default, indicates an unaugmented GNSS fix with accuracy > 10m.
+   */
+  const meta = getMetaDataForAttributeByReport(aisType)['accuracy'];
+  const accuracy:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  if (accuracy === 1) {
+    return 1;
+  }
+  // return default value '0'
+  return 0;
 }
 

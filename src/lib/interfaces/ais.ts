@@ -7,9 +7,10 @@
  *  - Coding Style using TypeScript: https://www.typescriptlang.org
 */
 interface Basic_AIS {
+  valid?: boolean, //internal boolean value
   type: number,
   repeat: number,
-  mmsi: number
+  mmsi: string
 }
 
 interface LatitudeAndLongitude {
@@ -52,9 +53,8 @@ export interface Position_Report_Class_A extends Basic_AIS, LatitudeAndLongitude
   //  0 = RAIM not in use (default),
   // 1 = RAIM in use.
   // See [RAIM] for a detailed description of this flag.
-  raim: string,
-  //
-  radio: string
+  raim?: string,
+  radio?: string
 }
 
 /**
