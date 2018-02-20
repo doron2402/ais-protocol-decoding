@@ -1,0 +1,22 @@
+{
+  "name": "ais-decoder",
+  "version": "1.0.0",
+  "description": "Ais Decoder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "AIS",
+    "Ais-Decoder",
+    "AIVDM"
+  ],
+  "author": "Doron Segal",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^2.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.6"
+  }
+}
