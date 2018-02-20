@@ -1,5 +1,27 @@
 'use strict';
 
+interface Basic_AIS {
+  type: number,
+  repeat: number,
+  mmsi: number
+}
+
+interface LatitudeAndLongitude {
+  lon: number,
+  lat: number,
+}
+
+interface Dimensions {
+  to_bow: number, //Dimension to Bow (meters)
+  to_stern: number, //Dimension to Stern (meters)
+  to_port: number, //Dimension to Port (meters)
+  to_starboard: number //Dimension to Starboard (meters)
+}
+
+interface Navigation {
+  sog: number,  // Speed Over Ground (SOG)
+  cog: number  // True bearing, 0.1 degree units
+}
 /**
  * Type 1/2/3
  * Type 1, 2 and 3 messages share a common reporting structure
@@ -10,17 +32,10 @@
  * occupying one AIVDM sentence.
  *
 */
-export interface Position_Report_Class_A {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Position_Report_Class_A extends Basic_AIS, LatitudeAndLongitude, Navigation {
   status: string, // navigation status
   rot: number,// Rate of Turn (ROT)
-  sog: number,// Speed Over Ground (SOG)
   accuracy: number,
-  lon: number,
-  lat: number,
-  cog: number,
   hdg: number,
   utc: number,
   maneuver: string,
@@ -42,10 +57,7 @@ export interface Position_Report_Class_A {
  * reference.
  * Total of 168 bits, occupying one AIVDM sentence.
 */
-export interface Base_Station_Report {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Base_Station_Report extends Basic_AIS, LatitudeAndLongitude {
   year: number,
   month: number,
   day: number,
@@ -53,8 +65,6 @@ export interface Base_Station_Report {
   minute: number,
   second: number,
   accuracy: number,
-  lon: number,
-  lat: number,
   epfd: string
 }
 
@@ -69,19 +79,13 @@ export interface Base_Station_Report {
  * Also note that it is fairly common in the wild
  * for this message to have a wrong bit length (420 or 422). Robust decoders should ignore trailing garbage and deal gracefully with a slightly truncated destination field.
 */
-export interface Static_Voyage_Related_Data {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Static_Voyage_Related_Data
+extends Basic_AIS, Dimensions {
   ais_version: number,
   imo: number, // IMO ship ID number
   callsign: number, // 7 six-bit characters
   shipname: string, // 20 six-bit characters
   shiptype: string, // See "VESSEL_TYPE in config"
-  to_bow: number, //Dimension to Bow (meters)
-  to_stern: number, //Dimension to Stern (meters)
-  to_port: number, //Dimension to Port (meters)
-  to_starboard: number, //Dimension to Starboard (meters)
   epfd: string, // See "EPFD Fix Types"
   month: number, // 1-12, 0=N/A (default)
   day: number, // 1-31, 0=N/A (default)
@@ -105,10 +109,7 @@ export interface Static_Voyage_Related_Data {
  * (up to 5 AIVDM sentence payloads).
  *
 */
-export interface Binary_Addressed_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Binary_Addressed_Message extends Basic_AIS {
   seqno: number, // Unsigned integer 0-3
   dest_mmsi: number, // Destination MMSI
   retransmit: number,
@@ -125,10 +126,7 @@ export interface Binary_Addressed_Message {
  * increments, depending on the number of destination
  * MMSIs included.
  */
-export interface Binary_Acknowledge {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Binary_Acknowledge extends Basic_AIS {
   mmsi1: number,
   mmsi2: number,
   mmsi3: number,
@@ -147,10 +145,7 @@ export interface Binary_Acknowledge {
  * This type is variable in length up to a maximum of
  * 1008 bits (up to 5 AIVDM sentence payloads).
  */
-export interface Binary_Broadcast_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Binary_Broadcast_Message extends Basic_AIS {
   dac: number, //Designated Area Code
   fid: number, // Functional ID
   data: string // Binary data, May be shorter than 952 bits.
@@ -161,16 +156,9 @@ export interface Binary_Broadcast_Message {
  * Tracking information for search-and-rescue aircraft.
  * Total number of bits is 168.
  */
-export interface Standard_SAR_Aircraft_Position_Report {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Standard_SAR_Aircraft_Position_Report extends Basic_AIS, LatitudeAndLongitude, Navigation {
   altitude: number,
-  sog: number,
   accuracy: number,
-  lon: number, // Minutes/10000 (as in CNB)
-  lat: number, // Minutes/10000 (as in CNB)
-  cog: number, // True bearing, 0.1 degree units
   utc: number, // UTC second.
   dte: number
 }
@@ -181,10 +169,7 @@ export interface Standard_SAR_Aircraft_Position_Report {
  * AIS base station.
  * Total number of bits is 72.
  */
-export interface UTC_Inquiry {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface UTC_Inquiry extends Basic_AIS {
   dest_mmsi: number
 }
 
@@ -202,10 +187,7 @@ export interface UTC_Inquiry {
   * This message is variable in length up to a maximum
   * of 1008 bits (up to 5 AIVDM sentence payloads).
   */
-export interface Addressed_Safety_Related_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Addressed_Safety_Related_Message extends Basic_AIS {
   seqno: number, //Sequence Number
   dest_mmsi: number,
   retransmit: number, // 0 = no retransmit (default), 1 = retransmitted
@@ -226,10 +208,7 @@ export interface Addressed_Safety_Related_Message {
   * This message is variable in length up to a maximum of 1008 bits
   * (up to 5 AIVDM sentence payloads).
   */
-  export interface Safety_Related_Broadcast_Message {
-    type: number,
-    repeat: number,
-    mmsi: number,
+  export interface Safety_Related_Broadcast_Message extends Basic_AIS {
     text: string
   }
 
@@ -248,10 +227,7 @@ export interface Addressed_Safety_Related_Message {
    * time division in the TDMA packet layer.
    * link: http://catb.org/gpsd/AIVDM.html#_type_15_interrogation
    */
-export interface Interrogation {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Interrogation extends Basic_AIS {
   mmsi1: number,
   type1_1: number, // First slot offset
   offset1_1: number
@@ -273,10 +249,7 @@ export interface Interrogation {
  * operation of an AIS base station network. Length may be 96 or 144 bits.
  *
  */
-export interface Assignment_Mode_Command {
-  type: number,
-  repeat: number,
-  mmsi: number, // Source MMSI
+export interface Assignment_Mode_Command extends Basic_AIS {
   mmsi1: number, //Destination A MMSI
   offset1: number,
   increment1: number,
@@ -291,12 +264,7 @@ export interface Assignment_Mode_Command {
  * The data in the payload is intended to be passed directly to GPS
  * receivers capable of accepting such corrections. 80 to 816 bits depending on payload size.
  */
-export interface Broadcast_Binary_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
-  lon: number,
-  lat: number,
+export interface Broadcast_Binary_Message extends Basic_AIS, LatitudeAndLongitude{
   data: string //DGNSS correction data
 }
 
@@ -306,15 +274,9 @@ export interface Broadcast_Binary_Message {
  * Omits navigational status and rate of turn.
  * Fields are encoded as in the common navigation block. 168 bits total.
  */
-export interface Standard_Class_B_CS_Position_Report {
-  type: number,
-  repeat: number,
-  mmsi: number,
-  sog: number,
+export interface Standard_Class_B_CS_Position_Report
+extends Basic_AIS, LatitudeAndLongitude, Navigation {
   accuracy: number,
-  lon: number,
-  lat: number,
-  cog: number, // 0.1 degrees from true north
   hdg: number, // 0 to 359 degrees, 511 = N/A
   utc: number, // Second of UTC timestamp.
   cs: number, // 0=Class B SOTDMA unit 1=Class B CS (Carrier Sense) unit
@@ -334,23 +296,13 @@ export interface Standard_Class_B_CS_Position_Report {
  * In practice, the information in the ship name and dimension fields is not reliable,
  * as it has to be hand-entered by humans rather than gathered automatically from sensors.
  */
-export interface Extended_Class_B_CS_Position_Report {
-  type: number,
-  repeat: number,
-  mmsi: number,
-  sog: number,
+export interface Extended_Class_B_CS_Position_Report
+extends Basic_AIS, LatitudeAndLongitude, Dimensions, Navigation {
   accuracy: number,
-  lon: number,
-  lat: number,
-  cog: number, // 0.1 degrees from true north
   hdg: number, // 0 to 359 degrees, 511 = N/A
   utc: number, // Second of UTC timestamp.
   shipname: string,
   shiptype: string,
-  to_bow: number, // Meters
-  to_stern: number, // Meters
-  to_port: number, // Meters
-  to_starboard: number, // Meters
   epfd: string
 }
 
@@ -362,10 +314,7 @@ export interface Extended_Class_B_CS_Position_Report {
  * interest unless you are implementing or studying an AIS base station network.
  * Length varies from 72-160 depending on the number of slot reservations (1 to 4) in the message.
  */
-export interface Data_Link_Management_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Data_Link_Management_Message extends Basic_AIS {
   offset1: number,
   number1: number, // Consecutive slots
   timeout1: number, // Allocation timeout in minutes
@@ -391,19 +340,11 @@ export interface Data_Link_Management_Message {
  * May vary between 272 and 360 bits.
  * According to [IALA], the aid type field has values 1-15 for fixed and 16-31 for floating aids to navigation.
  */
-export interface Aid_Navigation_Report {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Aid_Navigation_Report
+extends Basic_AIS, LatitudeAndLongitude, Dimensions {
   aid_type: string, //See "Navaid Types"
   name: string,
   accuracy: number,
-  lon: number,
-  lat: number,
-  to_bow: number, //Dimension to Bow (meters)
-  to_stern: number, //Dimension to Stern (meters)
-  to_port: number, //Dimension to Port (meters)
-  to_starboard: number, //Dimension to Starboard (meters)
   epfd: string,
   utc: number,
   off_position: number, // The Off-Position Indicator is for floating Aids-to-Navigation only:
@@ -419,10 +360,7 @@ export interface Aid_Navigation_Report {
  * This message contains no navigational information,
  * and is unlikely to be of interest unless you are implementing or studying an AIS base station network.
  */
-export interface Channel_Management {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Channel_Management extends Basic_AIS {
   channel_a: number,
   channel_b: number,
   txrx: number, //Transmit/receive mode
@@ -449,10 +387,7 @@ export interface Channel_Management {
  * and is unlikely to be of interest unless you are
  * implementing or studying an AIS base station network.
  */
-export interface Group_Assignment_Command {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Group_Assignment_Command extends Basic_AIS {
   ne_lon: number,
   ne_lat: number,
   sw_lon: number,
@@ -461,7 +396,6 @@ export interface Group_Assignment_Command {
   ship_type: string, // see ship_type
   interval: string, // See "Station Intervals"
   quite: string, // 0 = none, 1-15 quiet time in minutes
-
 }
 
 /**
@@ -478,10 +412,8 @@ export interface Group_Assignment_Command {
  * However, in the wild, A parts are often transmitted with only 160 bits,
  * omitting the spare 7 bits at the end. Implementers should be permissive about this.
  */
-export interface Static_Data_Report {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Static_Data_Report
+extends Basic_AIS, Dimensions {
   partno: number,
   shipname: string,
   shiptype: string,
@@ -489,10 +421,6 @@ export interface Static_Data_Report {
   model: number,
   serial: number,
   callsign: number,
-  to_bow: number, //Dimension to Bow (meters)
-  to_stern: number, //Dimension to Stern (meters)
-  to_port: number, //Dimension to Port (meters)
-  to_starboard: number, //Dimension to Starboard (meters)
   mothership_mmsi: number
 }
 
@@ -507,10 +435,7 @@ export interface Static_Data_Report {
  * The data fields are not, in contrast to message type 26, followed by a radio status block.
  * Note: Type 25 is extremely rare. As of April 2011 it has not been observed even in long-duration samples from AISHub.
  */
-export interface Single_Slot_Binary_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Single_Slot_Binary_Message extends Basic_AIS {
   addressed: string, // 0=broadcast, 1=addressed.
   structured: string, // If the structured flag is on, a 16-bit application identifier is extracted;
   // this field is to be interpreted as a 10 bit DAC and 6-bit FID as in message types 6 and 8.
@@ -527,10 +452,7 @@ export interface Single_Slot_Binary_Message {
  * Note: Type 26 is extremely rare.
  * As of April 2011 it has not been observed even in long-duration samples from AISHub.
  */
-export interface Multiple_Slot_Binary_Message {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Multiple_Slot_Binary_Message extends Basic_AIS {
   addressed: string, // 0=broadcast, 1=addressed.
   structured: string, // If the structured flag is on, a 16-bit application identifier is extracted;
   // this field is to be interpreted as a 10 bit DAC and 6-bit FID as in message types 6 and 8.
@@ -552,16 +474,9 @@ export interface Multiple_Slot_Binary_Message {
  * However, in the wild these are sometimes transmitted with 168 bits
  * (a full slot). Robust decoders should warn when this occurs but decode the first 96 bits.
  */
-export interface Long_Range_AIS_Broadcast {
-  type: number,
-  repeat: number,
-  mmsi: number,
+export interface Long_Range_AIS_Broadcast extends Basic_AIS, LatitudeAndLongitude, Navigation {
   accuracy: number,
   status: string,
-  lon: number,
-  lat: number,
-  sog: number,
-  cog: number, // 0.1 degrees from true north
   gnss: number, //0 = current GNSS position 1 = not GNSS position (default)
 }
 

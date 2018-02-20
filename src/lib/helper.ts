@@ -135,7 +135,7 @@ export function fetchRateOfTurn(bitArray: Array<number>, aisType:number): number
     _rot = _rot - 256;
     rotDirection = -1.0;
   }
-  return Number((rotDirection * Math.pow((_rot/ 4.733), 2)).toFixed(Precision));
+  return Number((rotDirection * Math.pow((_rot/ 4.733), 2)).toFixed(1));
 }
 
 export function fetchCourseOverGround(bitArray: Array<number>, aisType: number): number {

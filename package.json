@@ -1,12 +1,13 @@
 {
   "name": "ais-decoder",
   "version": "1.0.0",
-  "description": "Ais Decoder",
-  "main": "index.js",
+  "description": "Ais Decoder (TypeScript)",
+  "main": "dist/lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "example": "npm run build && node built/test/example.js"
+    "build": "rm -rf dist && tsc",
+    "example": "npm run build && node dist/test/example.js",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "AIS",
