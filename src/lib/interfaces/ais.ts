@@ -1,5 +1,11 @@
 'use strict';
-
+/**
+ *
+ * Referennces:
+ *  - AIS Format: http://catb.org/gpsd/AIVDM.html
+ *  - OpenCPN AIS: https://github.com/OpenCPN/OpenCPN/blob/master/src/AIS_Decoder.cpp
+ *  - Coding Style using TypeScript: https://www.typescriptlang.org
+*/
 interface Basic_AIS {
   type: number,
   repeat: number,
@@ -22,6 +28,7 @@ interface Navigation {
   sog: number,  // Speed Over Ground (SOG)
   cog: number  // True bearing, 0.1 degree units
 }
+
 /**
  * Type 1/2/3
  * Type 1, 2 and 3 messages share a common reporting structure
