@@ -1,20 +1,18 @@
 'use strict';
 
 export function parseIntFromBuffer(bitArray: Array<number>, start: number, len: number): number {
-  var acc = 0;
-		var cp, cx,c0, cs;
+  let acc = 0;
+	let cp:number, cx: number, c0:number, cs:number;
 
-		for(var i=0 ; i<len ; i++)
-		{
-				acc  = acc << 1;
-				cp = Math.floor((start + i) / 6);
-				cx = bitArray[cp];
-				cs = 5 - ((start + i) % 6);
-				c0 = (cx >> cs) & 1;
-
-				acc |= c0;
-		}
-		return acc;
+  for(var i=0 ; i<len ; i++) {
+    acc  = acc << 1;
+    cp = Math.floor((start + i) / 6);
+    cx = bitArray[cp];
+    cs = 5 - ((start + i) % 6);
+    c0 = (cx >> cs) & 1;
+    acc |= c0;
+  }
+	return acc;
 }
 
 export function parseStringFromBuffer(bitArray: Array<number>, start: number, len: number): string {
@@ -29,29 +27,27 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
   let cs: number;
   let c0: number;
   let acc, k, i = 0;
-  while(i < len)
-  {
-     acc=0;
-     for(var j=0 ; j < 6 ; j++)
-     {
-        acc  = acc << 1;
-        cp =   Math.floor((start + i) / 6);
-        cx = this.bitarray[cp];
-        cs = 5 - ((start + i) % 6);
-        c0 = (cx >> (5 - ((start + i) % 6))) & 1;
-        acc |= c0;
-        i++;
-     }
-     buffer[k] = acc; // opencpn
-     if(acc < 0x20)  {
-       buffer[k] += 0x40;
-     } else {
-       buffer[k] = acc;  // opencpn enfoce (acc & 0x3f) ???
-     }
-     if (buffer[k] === 0x40) {
-       break; // name end with '@'
-     }
-     k++;
+  while(i < len) {
+    acc=0;
+    for(var j=0 ; j < 6 ; j++){
+      acc  = acc << 1;
+      cp =   Math.floor((start + i) / 6);
+      cx = this.bitarray[cp];
+      cs = 5 - ((start + i) % 6);
+      c0 = (cx >> (5 - ((start + i) % 6))) & 1;
+      acc |= c0;
+      i++;
+    }
+    buffer[k] = acc; // opencpn
+    if(acc < 0x20)  {
+      buffer[k] += 0x40;
+    } else {
+      buffer[k] = acc;  // opencpn enfoce (acc & 0x3f) ???
+    }
+    if (buffer[k] === 0x40) {
+      break; // name end with '@'
+    }
+    k++;
   }
   return buffer.toString('utf8', 0, k);
 }

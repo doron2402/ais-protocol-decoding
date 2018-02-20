@@ -1,5 +1,7 @@
 'use strict';
 
+export const Precision:number = 4;
+export const BITS:number = 6;
 
 export enum Formatter {
 	AIVDM = '!AIVDM',
@@ -10,6 +12,32 @@ export enum VHF_CHANNEL {
 	A = 'A',
 	B = 'B'
 }
+
+const ATTR_META_DATA = {
+	1: {
+		sog: { index: 50, len: 10, units: 'knot' },
+		cog: { index: 116, len: 12, units: 'degree' },
+		rot: { index: 42, len: 8, units: 'degree' },
+		lng: { index: 61, len: 28, units: 'degree' },
+		lat: { index: 89, len: 27, units: 'degree' },
+		hdg: { index: 128, len: 9, units: 'degrees' }
+	},
+	4: {
+		lng: { index: 57, len: 28, units: 'degree' },
+		lat: { index: 85, len: 27, units: 'degree' },
+	},
+	18: {
+		sog: { index: 46, len: 10, units: 'knot' },
+		cog: { index: 112, len: 12, units: 'degree' },
+		rot: { index: 46, len: 8, units: 'degree' },
+		lng: { index: 57, len: 28, units: 'degree' },
+		lat: { index: 85, len: 27, units: 'degree' },
+	},
+	21: {
+		lng: { index: 164, len: 28, units: 'degree' },
+		lat: { index: 192, len: 27, units: 'degree' },
+	}
+};
 
 const EPFD_TYPE = {
   0: 'Undefined',
@@ -193,8 +221,6 @@ const STATION_INTERVALS = [
 	'Reserved for future use'
 ];
 
-export const BITS:number = 6;
-
 export function getManeuverIndicator(code: number): string {
   return Maneuver_Indicator[code] ?
     Maneuver_Indicator[code] :
@@ -232,4 +258,11 @@ export function getMooringPosition(code: number): string {
 export function getStationInterval(code: number): string {
 	return STATION_INTERVALS[code] ?
 		STATION_INTERVALS[code] : 'unknown interval';
+}
+
+export function getMetaDataForAttributeByReport(report: number): any {
+	if ([1,2,3].indexOf(report) !== -1) {
+		return ATTR_META_DATA[1];
+	}
+	return ATTR_META_DATA[report] ? ATTR_META_DATA[report] : {};
 }

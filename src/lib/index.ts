@@ -5,7 +5,10 @@ import { Formatter, VHF_CHANNEL } from './config';
 import {
 	getLatAndLng,
 	fetchSog,
-	fetchRateOfTurn
+	fetchRateOfTurn,
+	decodePayloadToBitArray,
+	fetchCourseOverGround,
+	fetchHeading
 } from './helper';
 
 interface Session {
@@ -127,33 +130,12 @@ export class Decoder {
         this.payload = Buffer.concat(payloads, len);
     }
 
-
-    // decode printable 6bit AIS/IEC binary format
-    for(let i = 0; i < this.payload.length; i++) {
-        let byte = this.payload[i];
-
-        // check byte is not out of range
-        if ((byte < 0x30) || (byte > 0x77)) {
-					return;
-				}
-        if ((0x57 < byte) && (byte < 0x60)) {
-					return;
-				}
-
-        // move from printable char to wacky AIS/IEC 6 bit representation
-        byte += 0x28;
-        if(byte > 0x80)  {
-					byte += 0x20;
-				} else {
-					byte += 0x28;
-				}
-        this.bitarray[i]=byte;
-    }
+		this.bitarray = decodePayloadToBitArray(this.payload);
 
     const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);
     const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
     const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
-	  const mmsi	 : string = ("000000000" + immsi).slice(-9);
+		const mmsi	 : string = ("000000000" + immsi).slice(-9);
 
 		console.log({ mmsi, type: aisType });
 		if ([1,2,3].indexOf(aisType) !== -1) {
@@ -165,6 +147,8 @@ export class Decoder {
 			this.valid = valid;
 			const sog = fetchSog(this.bitarray, aisType);
 			const rot = fetchRateOfTurn(this.bitarray, aisType);
+			const cog = fetchCourseOverGround(this.bitarray, aisType);
+			const hdg = fetchHeading(this.bitarray, aisType);
 			console.log({
 				sog,
 				valid: this.valid,
@@ -173,9 +157,15 @@ export class Decoder {
 				navStatus,
 				class: aisClass,
 				type: aisType,
-				rot
+				rot,
+				cog,
+				hdg
 			});
-		} else {
+		} else if (aisType === 18) {
+			const sog = fetchSog(this.bitarray, aisType);
+			console.log({ sog });
+		}
+		else {
 			throw new Error(`AIS Type ${aisType} is not supported`);
 		}
 	}

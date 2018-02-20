@@ -1,56 +1,38 @@
 'use strict'
 
-import { getManeuverIndicator } from './config';
+import { getManeuverIndicator, Precision, getMetaDataForAttributeByReport } from './config';
 import { parseIntFromBuffer } from './bitsHelper';
-interface AIS_MESSAGE {
-  class: string,
-  navstatus: number,
-  latitude: number,
-  longitude: number,
-  valid: boolean,
-  sog: number,
-  cog: number,
-  hdg: number,
-  utc: number,
-  type: number,
-  maneuver_indicator?: string
-}
 
 interface LatLngResponse {
   latitude: number,
   longitude: number,
   valid: boolean
 }
-interface PositionMeta {
-  start: number,
-  length: number
-}
 
+export function decodePayloadToBitArray(input:Array<number>): Array<number> {
+  let bitarray = [];
+  // decode printable 6bit AIS/IEC binary format
+  for(let i = 0; i < input.length; i++) {
+    let byte = input[i];
 
-function getLatitudeAndLongitudeMeta(aisType: number): { latitudeMeta: PositionMeta, longitudeMeta: PositionMeta } {
-  let latitudeMeta:PositionMeta
-  let longitudeMeta:PositionMeta
-  if ([1,2,3].indexOf(aisType) !== -1) {
-    longitudeMeta = { start: 61, length: 28 };
-    latitudeMeta = { start: 89, length: 27 };
-  } else if (aisType === 4) {
-    longitudeMeta = { start: 79, length: 28 };
-    latitudeMeta = { start: 107, length: 27 };
+    // check byte is not out of range
+    if ((byte < 0x30) || (byte > 0x77)) {
+      return;
+    }
+    if ((0x57 < byte) && (byte < 0x60)) {
+      return;
+    }
+
+    // move from printable char to wacky AIS/IEC 6 bit representation
+    byte += 0x28;
+    if(byte > 0x80)  {
+      byte += 0x20;
+    } else {
+      byte += 0x28;
+    }
+    bitarray[i] = byte;
   }
-  else if (aisType === 18) {
-    longitudeMeta = { start: 57, length: 28 };
-    latitudeMeta = { start: 85, length: 27 };
-  }
-  else if (aisType === 21) {
-    longitudeMeta = { start: 164, length: 28 };
-    latitudeMeta = { start: 192, length: 27 };
-  } else {
-    // unknown ais type
-    console.error('Cannot fetch latitude and longitude. Unknown ais type');
-    longitudeMeta = { start: 61, length: 28 };
-    latitudeMeta = { start: 89, length: 27 };
-  }
-  return { longitudeMeta, latitudeMeta };
+  return bitarray;
 }
 
 export function getLatAndLng(bitarray: Array<number>, aisType: number): LatLngResponse {
@@ -73,20 +55,18 @@ export function getLatAndLng(bitarray: Array<number>, aisType: number): LatLngRe
    * indicates latitude is not available and is the default.
    *
    */
-  const { latitudeMeta, longitudeMeta } = getLatitudeAndLongitudeMeta(aisType);
-  let lng = parseIntFromBuffer(
-    bitarray,
-    longitudeMeta.start,
-    longitudeMeta.length
-  );
+  const meta = getMetaDataForAttributeByReport(aisType);
+  const meta_lat = meta.lat;
+  const meta_lng = meta.lng;
+  let lng = parseIntFromBuffer(bitarray, meta_lng.index, meta_lng.len);
   if (lng & 0x08000000) {
     lng |= 0xf0000000;
   }
   lng = parseFloat(String(lng/600000));
   let lat = parseIntFromBuffer(
     bitarray,
-    latitudeMeta.start,
-    latitudeMeta.length
+    meta_lat.index,
+    meta_lat.len
   );
   if(lat & 0x04000000) {
     lat |= 0xf8000000;
@@ -111,31 +91,29 @@ export function fetchSog(bitArray: Array<number>, aisType): number {
    * value 1022 indicates 102.2 knots or higher.
    *
   */
-  const sogIndexLength = {
-    1: { index: 50, len: 10 },
-    2: { index: 50, len: 10 },
-    3: { index: 50, len: 10 },
-    18: { index: 46, len: 10 }
-  };
   // sog - speed over ground
   // Speed over ground is in 0.1-knot resolution
   // from 0 to 102 knots.
   // Value 1023 indicates speed is not available, value 1022 indicates 102.2 knots or higher.
-  let sog: number = undefined;
+  const meta = getMetaDataForAttributeByReport(aisType)['sog'];
+  let sog: number = undefined; // sog should be undefined by default
   try {
-    const _sog: number = parseIntFromBuffer(bitArray, sogIndexLength[aisType].index, sogIndexLength[aisType].len);
+    const _sog: number = parseIntFromBuffer(
+      bitArray,
+      meta.index,
+      meta.len
+    );
     if (!isNaN(_sog) && _sog !== 1023) {
-      sog = parseFloat(String(0.1 * _sog));
+      sog = Number(parseFloat(String(0.1 * _sog)).toFixed(Precision));
     }
   } catch (err) {
-
     throw new Error(err);
   }
 
   return sog;
 }
 
-export function fetchRateOfTurn(bitArray: Array<number>, aisType): number {
+export function fetchRateOfTurn(bitArray: Array<number>, aisType:number): number {
   /**
    * Turn rate is encoded as follows:
    * 0 = not turning
@@ -147,22 +125,13 @@ export function fetchRateOfTurn(bitArray: Array<number>, aisType): number {
    * Values between 0 and 708 degrees/min coded by ROTAIS=4.733 * SQRT(ROTsensor) degrees/min where ROTsensor is the Rate of Turn as input by an external Rate of Turn Indicator. ROTAIS is rounded to the nearest integer value. Thus, to decode the field value, divide by 4.733 and then square it. Sign of the field value should be preserved when squaring it, otherwise the left/right indication will be lost.
    *
   */
-  const RateOfTurnIndexAndLength = {
-    1: { index: 42, len: 8 },
-    2: { index: 42, len: 8 },
-    3: { index: 42, len: 8 },
-    18: { index: 46, len: 8 }
-  };
-  // sog - speed over ground
-  // Speed over ground is in 0.1-knot resolution
-  // from 0 to 102 knots.
-  // Value 1023 indicates speed is not available, value 1022 indicates 102.2 knots or higher.
+  const meta = getMetaDataForAttributeByReport(aisType)['rot'];
   let rot: number = undefined;
   try {
     rot =  Math.floor(4.733 * Math.sqrt(Math.floor(parseIntFromBuffer(
       bitArray,
-      RateOfTurnIndexAndLength[aisType].index,
-      RateOfTurnIndexAndLength[aisType].len
+      meta.index,
+      meta.len
     ))));
   } catch (err) {
     throw new Error(err);
@@ -170,3 +139,31 @@ export function fetchRateOfTurn(bitArray: Array<number>, aisType): number {
 
   return rot;
 }
+
+export function fetchCourseOverGround(bitArray: Array<number>, aisType: number): number {
+  /**
+   * Relative to true north, to 0.1 degree precision
+   * Course over ground in 1/10 = (0-3599). 3600 (E10h) = not available = default. 3 601-4 095 should not be used
+   * Course over ground will be 3600 (0xE10) if that data is not available.
+   */
+  const meta = getMetaDataForAttributeByReport(aisType)['cog'];
+  const _cog = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  if (_cog === 3600) {
+    return undefined;
+  }
+  const cog = Number(parseFloat(String(0.1 * _cog)).toFixed(Precision));
+  return cog;
+}
+
+export function fetchHeading(bitArray: Array<number>, aisType: number): number {
+  // True Heading (hdg)
+  // 0 to 359 degrees, 511 = not available.
+  const meta = getMetaDataForAttributeByReport(aisType)['hdg'];
+  const _hdg = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  if (_hdg === 511) {
+    return undefined;
+  }
+  const hdg = Number(parseFloat(String(0.1 * _hdg)).toFixed(Precision));
+  return hdg;
+}
+
