@@ -4,12 +4,16 @@
   "description": "Ais Decoder",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "example": "npm run build && node built/test/example.js"
   },
   "keywords": [
     "AIS",
     "Ais-Decoder",
-    "AIVDM"
+    "AIVDM",
+    "AIVDO",
+    "Ocean"
   ],
   "author": "Doron Segal",
   "license": "ISC",
@@ -18,5 +22,13 @@
   },
   "devDependencies": {
     "@types/node": "^9.4.6"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doron2402/ais-protocol-decoding.git"
+  },
+  "bugs": {
+    "url": "https://github.com/doron2402/ais-protocol-decoding/issues"
+  },
+  "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme"
 }

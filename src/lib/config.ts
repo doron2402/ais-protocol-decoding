@@ -1,5 +1,16 @@
 'use strict';
 
+
+export enum Formatter {
+	AIVDM = '!AIVDM',
+	AIVDO = '!AIVDO'
+}
+
+export enum VHF_CHANNEL {
+	A = 'A',
+	B = 'B'
+}
+
 const EPFD_TYPE = {
   0: 'Undefined',
   1: 'GPS',
@@ -62,16 +73,16 @@ const NAV_STATUS = [
 	"Not defined (default)"
 ];
 
-const Mooring_Position = {
-  0: 'Not available',
-  1: 'Port-side to',
-  2: 'Starboard-side to',
-  3: 'Mediterranean (end-on) mooring',
-  4: 'Mooring buoy',
-  5: 'Anchorage',
-  6: 'Reserved for future use',
-  7: 'Reserved for future use'
-};
+const Mooring_Position = [
+	'Not available',
+	'Port-side to',
+	'Starboard-side to',
+	'Mediterranean (end-on) mooring',
+	'Mooring buoy',
+	'Anchorage',
+	'Reserved for future use',
+	'Reserved for future use'
+];
 
 const VESSEL_TYPE = {
 	0: "Not available (default)",
@@ -157,11 +168,30 @@ const VESSEL_TYPE = {
  98: "Other Type, Reserved for future use",
  99: "Other Type, no additional information"
 };
-const Maneuver_Indicator = {
-  0: 'Not available',
-  1: 'No special maneuver',
-  2: 'Special maneuver'
-};
+const Maneuver_Indicator = [
+	'Not available',
+	'No special maneuver',
+	'Special maneuver'
+];
+
+const STATION_INTERVALS = [
+	'As given by the autonomous mode',
+	'10 Minutes',
+	'6 Minutes',
+	'3 Minutes',
+	'1 Minute',
+	'30 Seconds',
+	'15 Seconds',
+	'10 Seconds',
+	'5 Seconds',
+	'Next Shorter Reporting Interval',
+	'Next Longer Reporting Interval',
+	'Reserved for future use',
+	'Reserved for future use',
+	'Reserved for future use',
+	'Reserved for future use',
+	'Reserved for future use'
+];
 
 export const BITS:number = 6;
 
@@ -192,8 +222,14 @@ export function getVesselType(vesselCode: number): string {
 export function getEPFDType(code: number): string {
   return EPFD_TYPE[code] ? EPFD_TYPE[code] : EPFD_TYPE[0];
 }
+
 export function getMooringPosition(code: number): string {
   return Mooring_Position[code] ?
     Mooring_Position[code] :
     Mooring_Position[0];
+}
+
+export function getStationInterval(code: number): string {
+	return STATION_INTERVALS[code] ?
+		STATION_INTERVALS[code] : 'unknown interval';
 }
