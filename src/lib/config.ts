@@ -17,7 +17,7 @@ const ATTR_META_DATA = {
 	1: {
 		sog: { index: 50, len: 10, units: 'knot' },
 		cog: { index: 116, len: 12, units: 'degree' },
-		rot: { index: 42, len: 8, units: 'degree' },
+		rot: { index: 42, len: 8, units: 'degree/min' },
 		lng: { index: 61, len: 28, units: 'degree' },
 		lat: { index: 89, len: 27, units: 'degree' },
 		hdg: { index: 128, len: 9, units: 'degrees' }
@@ -29,7 +29,7 @@ const ATTR_META_DATA = {
 	18: {
 		sog: { index: 46, len: 10, units: 'knot' },
 		cog: { index: 112, len: 12, units: 'degree' },
-		rot: { index: 46, len: 8, units: 'degree' },
+		rot: { index: 46, len: 8, units: 'degree/min' },
 		lng: { index: 57, len: 28, units: 'degree' },
 		lat: { index: 85, len: 27, units: 'degree' },
 	},

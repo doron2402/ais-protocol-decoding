@@ -127,17 +127,15 @@ export function fetchRateOfTurn(bitArray: Array<number>, aisType:number): number
   */
   const meta = getMetaDataForAttributeByReport(aisType)['rot'];
   let rot: number = undefined;
-  try {
-    rot =  Math.floor(4.733 * Math.sqrt(Math.floor(parseIntFromBuffer(
-      bitArray,
-      meta.index,
-      meta.len
-    ))));
-  } catch (err) {
-    throw new Error(err);
+  let _rot = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  let rotDirection:number = 1.0;
+  if (_rot === 128) {
+    _rot = -128;
+  } else if ((_rot & 0x80) === 0x80) {
+    _rot = _rot - 256;
+    rotDirection = -1.0;
   }
-
-  return rot;
+  return Number((rotDirection * Math.pow((_rot/ 4.733), 2)).toFixed(Precision));
 }
 
 export function fetchCourseOverGround(bitArray: Array<number>, aisType: number): number {

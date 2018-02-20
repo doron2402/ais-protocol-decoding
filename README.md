@@ -19,7 +19,12 @@
     - http://www.maritec.co.za/aisvdmvdodecoding1.php
   - Wikipedia:
     - https://en.wikipedia.org/wiki/Automatic_identification_system
+  - OpenCPN
+    - Github: https://github.com/OpenCPN/OpenCPN/blob/45504f35c005ed1ffcd117c67797279da42d53ae/src/AIS_Decoder.cpp
 
 
  ### Important notes:
   - Ais payload is represented in a 6bits encoded string
+
+### Running example:
+  - `npm run example`
