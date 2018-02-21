@@ -286,10 +286,10 @@ extends Basic_AIS, LatitudeAndLongitude, Navigation {
   accuracy: number,
   hdg: number, // 0 to 359 degrees, 511 = N/A
   utc: number, // Second of UTC timestamp.
-  cs: number, // 0=Class B SOTDMA unit 1=Class B CS (Carrier Sense) unit
-  display: string, // 0=No visual display, 1=Has display, (Probably not reliable).
-  dsc: string, // If 1, unit is attached to a VHF voice radio with DSC capability.
-  band: number, // Base stations can command units to switch frequency.
+  cs?: number, // 0=Class B SOTDMA unit 1=Class B CS (Carrier Sense) unit
+  display?: number, // 0=No visual display, 1=Has display, (Probably not reliable).
+  dsc?: string, // If 1, unit is attached to a VHF voice radio with DSC capability.
+  band?: number, // Base stations can command units to switch frequency.
   // If this flag is 1, the unit can use any part of the marine channel.
 }
 

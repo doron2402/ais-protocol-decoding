@@ -13,37 +13,6 @@ export enum VHF_CHANNEL {
 	B = 'B'
 }
 
-const ATTR_META_DATA = {
-	1: {
-		sog: { index: 50, len: 10, units: 'knot' },
-		cog: { index: 116, len: 12, units: 'degree' },
-		rot: { index: 42, len: 8, units: 'degree/min' },
-		lng: { index: 61, len: 28, units: 'degree' },
-		lat: { index: 89, len: 27, units: 'degree' },
-		hdg: { index: 128, len: 9, units: 'degrees' },
-		status: { index: 38, len: 4 },
-		accuracy: { index: 60, len: 1, units: 'meters' },
-	},
-	4: {
-		lng: { index: 57, len: 28, units: 'degree' },
-		lat: { index: 85, len: 27, units: 'degree' },
-	},
-	9: {
-		accuracy: { index: 60, len: 1, units: 'meters' },
-	},
-	18: {
-		sog: { index: 46, len: 10, units: 'knot' },
-		cog: { index: 112, len: 12, units: 'degree' },
-		rot: { index: 46, len: 8, units: 'degree/min' },
-		lng: { index: 57, len: 28, units: 'degree' },
-		lat: { index: 85, len: 27, units: 'degree' },
-	},
-	21: {
-		lng: { index: 164, len: 28, units: 'degree' },
-		lat: { index: 192, len: 27, units: 'degree' },
-	}
-};
-
 const EPFD_TYPE = {
   0: 'Undefined',
   1: 'GPS',
@@ -265,9 +234,3 @@ export function getStationInterval(code: number): string {
 		STATION_INTERVALS[code] : 'unknown interval';
 }
 
-export function getMetaDataForAttributeByReport(report: number): any {
-	if ([1,2,3].indexOf(report) !== -1) {
-		return ATTR_META_DATA[1];
-	}
-	return ATTR_META_DATA[report] ? ATTR_META_DATA[report] : {};
-}

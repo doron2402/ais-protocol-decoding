@@ -1,33 +1,62 @@
 'use strict'
 
 import { parseStringFromBuffer, parseIntFromBuffer } from './bitsHelper';
-import { Position_Report_Class_A } from './interfaces/ais';
-import { Formatter, VHF_CHANNEL } from './config';
+import { decodePayloadToBitArray } from './helper';
 import {
-	decodePayloadToBitArray,
-	fetchSog,
-	fetchRateOfTurn,
-	fetchCourseOverGround,
-	fetchHeading,
-	getLatAndLng,
-	fetchAccuracy,
-	fetchNavigationStatus,
-} from './helper';
+	parsePositionReportClassA,
+	parseStandardClassBPositionReport
+} from './parser';
 
-interface Session {
-	formatter: Formatter,
-	message_count: number,
-	sequence_id: number,
-}
+import { Formatter, VHF_CHANNEL } from './config';
 
 export class Decoder {
 	bitarray: Array<any>;
 	payload: any;
 	valid: boolean;
+	results: Array<any>;
 
-	constructor(private _rawMessage: string) {
-		console.log(_rawMessage);
-		this.decode(_rawMessage);
+	constructor(private messages: Array<string>) {
+		if (messages.length < 1) {
+			return;
+		}
+		let session:object = {};
+		messages.forEach((item) => {
+			if (this.validateRawMessage(item) !== true) {
+				console.error('input is not valid');
+				return;
+			}
+			const nmea = item.split(',');
+			// make sure we are facing a supported AIS message
+			// AIVDM for standard messages, AIVDO for messages from own ship AIS
+			if (nmea[0] !== Formatter.AIVDM && nmea[0] !== Formatter.AIVDO) {
+				console.error('Unknown Format');
+				return;
+			}
+
+			// check if buffer (data) exist
+			if (!nmea[5]) {
+				console.error('Buffer data is not found.');
+				return;
+			}
+
+			const numberOfMessages:number = Number(nmea[1]);
+			const CurrentMessage:number = Number(nmea[2]);
+
+			if (numberOfMessages < 2) {
+				// reset session
+				session = {};
+			}
+			// decode message
+
+			if (numberOfMessages === CurrentMessage) {
+				// reset session
+				session = {};
+			}
+		});
+	}
+
+	decoding(input: string, session?: any): any {
+		this.bitarray=[];
 	}
 
 	validateRawMessage(input: string): boolean {
@@ -43,7 +72,7 @@ export class Decoder {
 	 * @param session {Session Object}
 	 * @returns AIS parsed Object
 	 */
- 	decode(input: string, session?: Session): any {
+ 	decode(input: string, session?: any): any {
 		if (this.validateRawMessage(input) !== true) {
 			console.error('input is not valid');
 		}
@@ -140,52 +169,17 @@ export class Decoder {
     const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
 		const mmsi	 : string = ("000000000" + immsi).slice(-9);
 
-		console.log({ mmsi, type: aisType });
 		if ([1,2,3].indexOf(aisType) !== -1) {
 			const report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
 			console.log(report);
-
+			this.results.push(report);
 		} else if (aisType === 18) {
-			const sog = fetchSog(this.bitarray, aisType);
-			console.log({ sog });
+			const report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
+			console.log(report);
+			this.results.push(report);
 		}
 		else {
 			throw new Error(`AIS Type ${aisType} is not supported`);
 		}
 	}
 }
-
-function parsePositionReportClassA(bitArray: Array<number>, aisType:number, repeat: number, mmsi: string): Position_Report_Class_A {
-	const aisClass:string = 'A';
-	// Navigational status
-	const navStatus = parseIntFromBuffer(bitArray, 38, 4);
-	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
-	const sog = fetchSog(bitArray, aisType);
-	const rot = fetchRateOfTurn(bitArray, aisType);
-	const cog = fetchCourseOverGround(bitArray, aisType);
-	const hdg = fetchHeading(bitArray, aisType);
-	const status = fetchNavigationStatus(bitArray, aisType);
-	const accuracy = fetchAccuracy(bitArray, aisType);
-	const utc:number = 0;
-	const maneuver: string = '0';
-	const raim: string = '0';
-
-	const report = {
-		valid,
-		repeat,
-		mmsi,
-		type: aisType,
-		status,
-		cog,
-		sog,
-		rot,
-		hdg,
-		lon: longitude,
-		lat: latitude,
-		accuracy,
-		utc,
-		maneuver,
-		raim,
-	};
-	return report;
-};

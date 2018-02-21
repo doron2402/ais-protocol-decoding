@@ -1,6 +1,7 @@
 'use strict'
 
-import { getManeuverIndicator, Precision, getMetaDataForAttributeByReport, getNavStatus } from './config';
+import { getManeuverIndicator, Precision, getNavStatus } from './config';
+import { getMetaDataForAttributeByReport } from './config/attributes';
 import { parseIntFromBuffer, parseStringFromBuffer } from './bitsHelper';
 
 interface LatLngResponse {
@@ -186,3 +187,24 @@ export function fetchAccuracy(bitArray: Array<number>, aisType: number): number 
   return 0;
 }
 
+export function fetchBandFlag(bitArray: Array<number>, aisType:number): number {
+  const meta = getMetaDataForAttributeByReport(aisType)['band'];
+  const band:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  return band;
+}
+
+export function fetchCSUnit(bitArray: Array<number>, aisType:number): number {
+  // 0=Class B SOTDMA unit
+  // 1=Class B CS (Carrier Sense) unit
+  const meta = getMetaDataForAttributeByReport(aisType)['cs'];
+  const cs:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  return cs;
+}
+
+export function fetchDisplayFlag(bitArray: Array<number>, aisType:number): number {
+  // 0=No visual display,
+  // 1=Has display, (Probably not reliable).
+  const meta = getMetaDataForAttributeByReport(aisType)['display'];
+  const display:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  return display;
+}
