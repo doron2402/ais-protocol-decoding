@@ -13,50 +13,135 @@ export class Decoder {
 	bitarray: Array<any>;
 	payload: any;
 	valid: boolean;
-	results: Array<any>;
+	results: Array<any> = [];
 
 	constructor(private messages: Array<string>) {
 		if (messages.length < 1) {
-			return;
+			throw new Error('input must be an array');
 		}
+		this.results = [];
 		let session:object = {};
 		messages.forEach((item) => {
 			if (this.validateRawMessage(item) !== true) {
-				console.error('input is not valid');
-				return;
+				throw new Error('Input is not valid');
 			}
 			const nmea = item.split(',');
+			const messageFormat:string = nmea[0];
+			const messageCounter:number = Number(nmea[1]);
+			const currentMessageNumber:number = Number(nmea[2]);
 			// make sure we are facing a supported AIS message
 			// AIVDM for standard messages, AIVDO for messages from own ship AIS
-			if (nmea[0] !== Formatter.AIVDM && nmea[0] !== Formatter.AIVDO) {
-				console.error('Unknown Format');
-				return;
+			if (messageFormat !== Formatter.AIVDM && messageFormat !== Formatter.AIVDO) {
+				throw new Error('Unknown format');
 			}
-
 			// check if buffer (data) exist
 			if (!nmea[5]) {
-				console.error('Buffer data is not found.');
-				return;
+				throw new Error('Buffer data is not found.');
 			}
 
-			const numberOfMessages:number = Number(nmea[1]);
-			const CurrentMessage:number = Number(nmea[2]);
-
-			if (numberOfMessages < 2) {
+			// When there's only one message
+			// set the session to an empty object
+			if (messageCounter < 2) {
 				// reset session
 				session = {};
 			}
 			// decode message
-
-			if (numberOfMessages === CurrentMessage) {
+			this.decoding(
+				nmea,
+				session
+			);
+			// compre the total number of message
+			// and the current message number
+			if (messageCounter === currentMessageNumber) {
 				// reset session
 				session = {};
 			}
 		});
+		console.log(this.results);
 	}
 
-	decoding(input: string, session?: any): any {
+	decoding(input: Array<any>, session: any): void {
 		this.bitarray=[];
+    this.valid= false; // will move to 'true' if parsing succeed
+		const messageFormat:string = input[0];
+		const messageCounter:number = Number(input[1]);
+		const currentMessageNumber:number = Number(input[2]);
+		const sequenceId:number = input[3] && input[3].length > 0 ? Number(input[3]) : NaN;
+		const channel = VHF_CHANNEL[input[4]]; // vhf channel A/B
+		let payload;
+    if(messageCounter > 1) {
+			if(Object.prototype.toString.call(session) !== "[object Object]") {
+				throw new Error("A session object is required to maintain state for decoding multipart AIS messages.");
+			}
+
+			if(currentMessageNumber > 1) {
+				if(messageFormat !== session.formatter) {
+					throw new Error("AisDecode: Sentence does not match formatter of current session");
+				}
+
+				if(session[currentMessageNumber - 1] === undefined) {
+					throw new Error("AisDecode: Session is missing prior message part, cannot parse partial AIS message.");
+				}
+
+				if(session.sequence_id !== sequenceId) {
+					throw new Error("AisDecode: Session IDs do not match. Cannot recontruct AIS message.");
+				}
+			} else {
+				session = ([undefined, null].indexOf(session) !== -1) ? undefined : session;
+				session.formatter = messageFormat;
+				session.message_count = messageCounter;
+				session.sequence_id = sequenceId;
+			}
+		}
+
+		// extract binary payload and other usefull information from nmea paquet
+    try {
+      payload = new Buffer(input[5]);
+    } catch (err) {
+			 throw new Error(err);
+    }
+
+
+    if(messageCounter > 1) {
+        session[currentMessageNumber] = {
+					payload: this.payload,
+					length: this.payload.length
+				};
+
+        // Not done building the session
+        if(currentMessageNumber < messageCounter) {
+					return;
+				}
+
+        let payloads = [];
+        let len = 0;
+        for(let i = 1; i <= session.message_count; ++i) {
+            payloads.push(session[i].payload);
+            len += session[i].length;
+        }
+
+        payload = Buffer.concat(payloads, len);
+    }
+
+		this.bitarray = decodePayloadToBitArray(payload);
+
+    const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);
+    const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
+    const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
+		const mmsi	 : string = ("000000000" + immsi).slice(-9);
+
+		if ([1,2,3].indexOf(aisType) !== -1) {
+			const report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
+			console.log(report);
+			this.results.push(report);
+		} else if (aisType === 18) {
+			const report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
+			console.log(report);
+			this.results.push(report);
+		}
+		else {
+			throw new Error(`AIS Type ${aisType} is not supported`);
+		}
 	}
 
 	validateRawMessage(input: string): boolean {
@@ -73,9 +158,6 @@ export class Decoder {
 	 * @returns AIS parsed Object
 	 */
  	decode(input: string, session?: any): any {
-		if (this.validateRawMessage(input) !== true) {
-			console.error('input is not valid');
-		}
 
 		this.bitarray=[];
     this.valid= false; // will move to 'true' if parsing succeed
@@ -168,18 +250,26 @@ export class Decoder {
     const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
     const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
 		const mmsi	 : string = ("000000000" + immsi).slice(-9);
-
+		let report;
 		if ([1,2,3].indexOf(aisType) !== -1) {
-			const report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
+			report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
 			console.log(report);
 			this.results.push(report);
-		} else if (aisType === 18) {
-			const report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
-			console.log(report);
-			this.results.push(report);
+		}
+		else if (aisType === 4) {
+			// const report = parseBaseStationReport(this.bitarray, aisType, repeat, mmsi);
+			// console.log(report);
+			// this.results.push(report);
+			report = { type: aisType };
+		}
+		else if (aisType === 18) {
+			report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
 		}
 		else {
-			throw new Error(`AIS Type ${aisType} is not supported`);
+			// throw new Error(`AIS Type ${aisType} is not supported`);
+			console.log(`Type: ${aisType}`);
+			report = this.bitarray;
 		}
+		this.results.push(report);
 	}
 }
