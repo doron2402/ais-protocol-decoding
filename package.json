@@ -5,8 +5,8 @@
   "main": "dist/lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist && tsc",
-    "example": "npm run build && npm run copy_fixture && node dist/test/example.js",
+    "build": "rm -rf dist && tsc && npm run copy_fixture",
+    "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run build",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture"
   },

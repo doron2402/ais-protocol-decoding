@@ -13,19 +13,33 @@ interface Basic_AIS {
   mmsi: string
 }
 
-interface LatitudeAndLongitude {
+export interface LatLngResponse {
+  latitude: number,
+  longitude: number,
+  valid: boolean
+}
+
+export interface DATE_AND_TIME {
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+}
+export  interface LatitudeAndLongitude {
   lon: number,
   lat: number,
 }
 
-interface Dimensions {
+export interface Dimensions {
   to_bow: number, //Dimension to Bow (meters)
   to_stern: number, //Dimension to Stern (meters)
   to_port: number, //Dimension to Port (meters)
   to_starboard: number //Dimension to Starboard (meters)
 }
 
-interface Navigation {
+export interface Navigation {
   sog: number,  // Speed Over Ground (SOG)
   cog: number  // True bearing, 0.1 degree units
 }
