@@ -504,6 +504,7 @@ export interface Multiple_Slot_Binary_Message extends Basic_AIS {
 export interface Long_Range_AIS_Broadcast extends Basic_AIS, LatitudeAndLongitude, Navigation {
   accuracy: number,
   status: string,
+  raim: number,
   gnss: number, //0 = current GNSS position 1 = not GNSS position (default)
 }
 

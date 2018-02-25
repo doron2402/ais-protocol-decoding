@@ -9,6 +9,8 @@ import {
 	parseBaseStationReport,
 	parseStaticDataReport,
 	parseBinaryAddressedMessage,
+	parseBinaryAcknowledge,
+	parseLongRangeAISBroadcastMessage
 } from './parser';
 
 import { Formatter, VHF_CHANNEL, MESSAGE_PART } from './config';
@@ -144,6 +146,9 @@ export class Decoder {
 			case 6:
 				report = parseBinaryAddressedMessage(this.bitarray, aisType, repeat, mmsi);
 				break;
+			case 7:
+				report = parseBinaryAcknowledge(this.bitarray, aisType, repeat, mmsi);
+				break;
 			case 18:
 				report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
 				break;
@@ -151,7 +156,10 @@ export class Decoder {
 				const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
 				report = parseStaticDataReport(this.bitarray, aisType, repeat, part, mmsi)
 				break;
+			case 27:
+				report = parseLongRangeAISBroadcastMessage(this.bitarray, aisType, repeat, mmsi);
 			default:
+				console.log(`Unsupported AIS Type: ${aisType} - ${mmsi}`);
 				break;
 		}
 

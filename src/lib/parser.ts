@@ -16,7 +16,7 @@ import {
 	fetchCSUnit,
 	fetchDisplayFlag,
 	fetchDateAndTime,
-	fetchDraught,
+	fetchLatitudeAndLongitude10Deg,
 } from './helper';
 import {
 	Position_Report_Class_A,
@@ -24,7 +24,9 @@ import {
 	Base_Station_Report,
 	Static_Voyage_Related_Data,
 	Static_Data_Report,
-	Binary_Addressed_Message
+	Binary_Addressed_Message,
+	Binary_Acknowledge,
+	Long_Range_AIS_Broadcast
 } from './interfaces/ais';
 import { MESSAGE_PART } from './config';
 
@@ -126,7 +128,7 @@ export function parseStaticVoyageRelatedData(
 		to_port,
 		to_starboard,
 		to_stern,
-		draught: fetchDraught(bitArray, aisType),
+		draught: fetchIntByAttr(bitArray, aisType, 'draught'),
 		destination: fetchStringByAttr(bitArray, aisType, 'destination'),
 		dte: fetchIntByAttr(bitArray, aisType, 'dte'),
 	};
@@ -149,6 +151,23 @@ export function parseBinaryAddressedMessage(bitArray: Array<number>,
 		dac: fetchIntByAttr(bitArray, aisType, 'dac'),
 		fid: fetchIntByAttr(bitArray, aisType, 'fid'),
 		data: fetchStringByAttr(bitArray, aisType, 'data'),
+	}
+}
+
+// Type 7
+export function parseBinaryAcknowledge(bitArray: Array<number>,
+  aisType:number,
+  repeat: number,
+  mmsi: string
+): Binary_Acknowledge {
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		mmsi1: fetchIntByAttr(bitArray, aisType, 'mmsi1'),
+		mmsi2: fetchIntByAttr(bitArray, aisType, 'mmsi2'),
+		mmsi3: fetchIntByAttr(bitArray, aisType, 'mmsi3'),
+		mmsi4: fetchIntByAttr(bitArray, aisType, 'mmsi4'),
 	}
 }
 
@@ -227,3 +246,32 @@ export function parseStaticDataReport(
 		}
 	}
 }
+
+export function parseLongRangeAISBroadcastMessage(
+	bitArray: Array<number>,
+  aisType:number,
+	repeat: number,
+  mmsi: string): Long_Range_AIS_Broadcast {
+		const accuracy = fetchIntByAttr(bitArray, aisType, 'accuracy') === 1 ? 1 : 0;
+		// The RAIM flag indicates whether Receiver Autonomous Integrity Monitoring is being used to check the performance of the EPFD.
+		// 0 = RAIM not in use (default), 1 = RAIM in use. See [RAIM] for a detailed description of this flag.
+		const raim = fetchIntByAttr(bitArray, aisType, 'raim') === 1 ? 1 : 0;
+		const status = fetchNavigationStatus(bitArray, aisType);
+		const { latitude, longitude, valid } = fetchLatitudeAndLongitude10Deg(bitArray, aisType);
+		// 0 = current GNSS position 1 = not GNSS position (default)
+		const gnss = fetchIntByAttr(bitArray, aisType, 'gnss') === 0 ? 0 : 1;
+		return {
+			valid,
+			type: aisType,
+			repeat,
+			mmsi,
+			accuracy,
+			raim,
+			status,
+			lon: longitude,
+			lat: latitude,
+			sog: fetchSog(bitArray, aisType),
+			cog: fetchCourseOverGround(bitArray, aisType),
+			gnss
+		}
+	}

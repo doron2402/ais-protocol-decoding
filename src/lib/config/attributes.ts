@@ -198,6 +198,21 @@ const ATTR_META_DATA = {
 		to_port: { index: 150, len: 6, units: 'meters' },
 		to_starboard: { index: 156, len: 6, units: 'meters' },
 		mothership_mmsi: { index: 132, len: 30 },
+	},
+	27: {
+		accuracy: { index: 38, len: 1 },
+		raim: { index: 39, len: 1, units: 'boolean' },
+		status: { index: 40, len: 4 },
+		// Longitude: minutes/10 East positive, West negative 181000 = N/A (default)
+		lng: { index: 44, len: 18, units: 'degree' },
+		// Latitude: minutes/10 North positive, South negative 91000 = N/A (default)
+		lat: { index: 62, len: 17, units: 'degree' },
+		// Knots (0-62); 63 = N/A (default)
+		sog: { index: 50, len: 10, units: 'knot' },
+		// 0 to 359 degrees, 511 = not available.
+		cog: { index: 85, len: 9, units: 'degree' },
+		// 0 = current GNSS position 1 = not GNSS position (default)
+		gnss: { index: 94, len: 1 },
 	}
 };
 

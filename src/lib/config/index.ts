@@ -19,7 +19,7 @@ export enum MESSAGE_PART {
 }
 
 const EPFD_TYPE = {
-  0: 'Undefined',
+  0: 'Undefined (default)',
   1: 'GPS',
   2: 'GLONASS',
   3: 'Combined GPS/GLONASS',

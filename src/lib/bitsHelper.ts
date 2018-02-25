@@ -18,7 +18,7 @@ export function parseIntFromBuffer(bitArray: Array<number>, start: number, len: 
 export function parseStringFromBuffer(bitArray: Array<number>, start: number, len: number): string {
   // TODO: support extended messages
   if (bitArray.length < (start + len) /6) {
-    throw new Error('Extended messages are not implemented');
+    console.log('Extended messages are not fully supported');
   }
 
   let buffer = new Buffer(20);
@@ -26,7 +26,9 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
   let cx: number;
   let cs: number;
   let c0: number;
-  let acc, k, i = 0;
+  let acc:number = 0;
+  let k:number = 0;
+  let i:number = 0;
   while(i < len) {
     acc=0;
     for(var j=0 ; j < 6 ; j++){
