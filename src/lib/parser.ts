@@ -23,7 +23,8 @@ import {
 	Standard_Class_B_CS_Position_Report,
 	Base_Station_Report,
 	Static_Voyage_Related_Data,
-	Static_Data_Report
+	Static_Data_Report,
+	Binary_Addressed_Message
 } from './interfaces/ais';
 import { MESSAGE_PART } from './config';
 
@@ -132,6 +133,24 @@ export function parseStaticVoyageRelatedData(
 	return report;
 }
 
+// Type 6
+export function parseBinaryAddressedMessage(bitArray: Array<number>,
+  aisType:number,
+  repeat: number,
+  mmsi: string
+): Binary_Addressed_Message {
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		seqno: fetchIntByAttr(bitArray, aisType, 'seqno'),
+		dest_mmsi: fetchIntByAttr(bitArray, aisType, 'dest_mmsi'),
+		retransmit: fetchIntByAttr(bitArray, aisType, 'retransmit') === 1 ? 'retransmitted' : 'no retransmit',
+		dac: fetchIntByAttr(bitArray, aisType, 'dac'),
+		fid: fetchIntByAttr(bitArray, aisType, 'fid'),
+		data: fetchStringByAttr(bitArray, aisType, 'data'),
+	}
+}
 
 // Type 18
 export function parseStandardClassBPositionReport(

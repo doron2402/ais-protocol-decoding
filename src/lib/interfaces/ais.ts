@@ -133,7 +133,7 @@ extends Basic_AIS, Dimensions {
 export interface Binary_Addressed_Message extends Basic_AIS {
   seqno: number, // Unsigned integer 0-3
   dest_mmsi: number, // Destination MMSI
-  retransmit: number,
+  retransmit: string, // 0 = no retransmit (default) 1 = retransmitted
   dac: number, // Designated Area Code
   fid: number,
   data: string // Binary data May be shorter than 920 bits.
