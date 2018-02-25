@@ -7,7 +7,8 @@ import {
 	parseStandardClassBPositionReport,
 	parseStaticVoyageRelatedData,
 	parseBaseStationReport,
-	parseStaticDataReport
+	parseStaticDataReport,
+	parseBinaryAddressedMessage,
 } from './parser';
 
 import { Formatter, VHF_CHANNEL, MESSAGE_PART } from './config';
@@ -128,40 +129,32 @@ export class Decoder {
     const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
 		const mmsi	 : string = ("000000000" + immsi).slice(-9);
 		let report;
-		if ([1,2,3].indexOf(aisType) !== -1) {
-			report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
-		} else if (aisType === 4) {
-			report = parseBaseStationReport(this.bitarray, aisType, repeat, mmsi);
-		} else if (aisType === 5) {
-			report = parseStaticVoyageRelatedData(this.bitarray, aisType, repeat, mmsi);
-		} else if (aisType === 6) {
-			report = null;
-			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
-		} else if (aisType === 8) {
-			report = null;
-			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
-		} else if (aisType === 9) {
-			report = null;
-			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
-		} else if (aisType === 11) {
-			report = null;
-			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
-		} else if (aisType === 14) {
-			report = null;
-			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
-		} else if (aisType === 18) {
-			report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
+		switch (aisType) {
+			case 1:
+			case 2:
+			case 3:
+				report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 4:
+				report = parseBaseStationReport(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 5:
+				report = parseStaticVoyageRelatedData(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 6:
+				report = parseBinaryAddressedMessage(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 18:
+				report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 24:
+				const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
+				report = parseStaticDataReport(this.bitarray, aisType, repeat, part, mmsi)
+				break;
+			default:
+				break;
 		}
-		else if (aisType === 24) {
-			const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
-			report = parseStaticDataReport(this.bitarray, aisType, repeat, part, mmsi)
-		}
-		else {
-			report = null;
-			console.log(`aisType is not supported ${aisType}`);
-			// throw new Error(`AIS Type ${aisType} is not supported`);
-			console.error(`AIS Type ${aisType} is not supported`);
-		}
+
 		this.results.push(report);
 	}
 
