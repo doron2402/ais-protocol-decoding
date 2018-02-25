@@ -1,33 +1,168 @@
 'use strict'
 
 import { parseStringFromBuffer, parseIntFromBuffer } from './bitsHelper';
-import { Position_Report_Class_A } from './interfaces/ais';
-import { Formatter, VHF_CHANNEL } from './config';
+import { decodePayloadToBitArray } from './helper';
 import {
-	decodePayloadToBitArray,
-	fetchSog,
-	fetchRateOfTurn,
-	fetchCourseOverGround,
-	fetchHeading,
-	getLatAndLng,
-	fetchAccuracy,
-	fetchNavigationStatus,
-} from './helper';
+	parsePositionReportClassA,
+	parseStandardClassBPositionReport,
+	parseStaticVoyageRelatedData,
+	parseBaseStationReport,
+	parseStaticDataReport
+} from './parser';
 
-interface Session {
-	formatter: Formatter,
-	message_count: number,
-	sequence_id: number,
-}
+import { Formatter, VHF_CHANNEL, MESSAGE_PART } from './config';
 
 export class Decoder {
 	bitarray: Array<any>;
 	payload: any;
 	valid: boolean;
+	results: Array<any> = [];
 
-	constructor(private _rawMessage: string) {
-		console.log(_rawMessage);
-		this.decode(_rawMessage);
+	constructor(private messages: Array<string>) {
+		if (messages.length < 1) {
+			throw new Error('input must be an array');
+		}
+		this.results = [];
+		let session:object = {};
+		messages.forEach((item) => {
+			if (!item || this.validateRawMessage(item) !== true) {
+				throw new Error('Input is not valid');
+			}
+			const nmea = item.split(',');
+			const messageFormat:string = nmea[0];
+			const messageCounter:number = Number(nmea[1]);
+			const currentMessageNumber:number = Number(nmea[2]);
+			// make sure we are facing a supported AIS message
+			// AIVDM for standard messages, AIVDO for messages from own ship AIS
+			if (messageFormat !== Formatter.AIVDM && messageFormat !== Formatter.AIVDO) {
+				throw new Error('Unknown format');
+			}
+			// check if buffer (data) exist
+			if (!nmea[5]) {
+				throw new Error('Buffer data is not found.');
+			}
+
+			// When there's only one message
+			// set the session to an empty object
+			if (messageCounter < 2) {
+				// reset session
+				session = {};
+			}
+			// decode message
+			this.decode(nmea, session);
+			// compre the total number of message
+			// and the current message number
+			if (messageCounter === currentMessageNumber) {
+				// reset session
+				session = {};
+			}
+		});
+		console.log(this.results);
+	}
+
+	decode(input: Array<any>, session: any): void {
+		this.bitarray=[];
+    this.valid= false; // will move to 'true' if parsing succeed
+		const messageFormat:string = input[0];
+		const messageCounter:number = Number(input[1]);
+		const currentMessageNumber:number = Number(input[2]);
+		const sequenceId:number = input[3] && input[3].length > 0 ? Number(input[3]) : NaN;
+		const channel = VHF_CHANNEL[input[4]]; // vhf channel A/B
+		let payload;
+    if(messageCounter > 1) {
+			if(Object.prototype.toString.call(session) !== "[object Object]") {
+				throw new Error("A session object is required to maintain state for decoding multipart AIS messages.");
+			}
+
+			if(currentMessageNumber > 1) {
+				if(messageFormat !== session.formatter) {
+					throw new Error("AisDecode: Sentence does not match formatter of current session");
+				}
+
+				if(session[currentMessageNumber - 1] === undefined) {
+					throw new Error("AisDecode: Session is missing prior message part, cannot parse partial AIS message.");
+				}
+
+				if(session.sequence_id !== sequenceId) {
+					throw new Error("AisDecode: Session IDs do not match. Cannot recontruct AIS message.");
+				}
+			} else {
+				session = ([undefined, null].indexOf(session) !== -1) ? undefined : session;
+				session.formatter = messageFormat;
+				session.message_count = messageCounter;
+				session.sequence_id = sequenceId;
+			}
+		}
+
+		// extract binary payload and other usefull information from nmea paquet
+    try {
+      payload = new Buffer(input[5]);
+    } catch (err) {
+			 throw new Error(err);
+    }
+
+
+    if(messageCounter > 1) {
+			const length = Number(payload.length);
+			session[currentMessageNumber] = { payload, length };
+
+			// Not done building the session
+			if(currentMessageNumber < messageCounter) {
+				return;
+			}
+
+			let payloads = [];
+			let len = 0;
+			for(let i = 1; i <= session.message_count; ++i) {
+					payloads.push(session[i].payload);
+					len += session[i].length;
+			}
+
+			payload = Buffer.concat(payloads, len);
+    }
+
+		this.bitarray = decodePayloadToBitArray(payload);
+
+    const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);
+    const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
+    const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
+		const mmsi	 : string = ("000000000" + immsi).slice(-9);
+		let report;
+		if ([1,2,3].indexOf(aisType) !== -1) {
+			report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
+		} else if (aisType === 4) {
+			report = parseBaseStationReport(this.bitarray, aisType, repeat, mmsi);
+		} else if (aisType === 5) {
+			report = parseStaticVoyageRelatedData(this.bitarray, aisType, repeat, mmsi);
+		} else if (aisType === 6) {
+			report = null;
+			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
+		} else if (aisType === 8) {
+			report = null;
+			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
+		} else if (aisType === 9) {
+			report = null;
+			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
+		} else if (aisType === 11) {
+			report = null;
+			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
+		} else if (aisType === 14) {
+			report = null;
+			console.log(`NOT IMPLEMENTED: aisType is not supported ${aisType}`);
+		} else if (aisType === 18) {
+			report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
+		}
+		else if (aisType === 24) {
+			const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
+			report = parseStaticDataReport(this.bitarray, aisType, repeat, part, mmsi)
+		}
+		else {
+			report = null;
+			console.log(`aisType is not supported ${aisType}`);
+			// throw new Error(`AIS Type ${aisType} is not supported`);
+			console.error(`AIS Type ${aisType} is not supported`);
+		}
+		this.results.push(report);
 	}
 
 	validateRawMessage(input: string): boolean {
@@ -37,155 +172,7 @@ export class Decoder {
 		return true;
 	}
 
-	/**
-	 *
-	 * @param input {String}
-	 * @param session {Session Object}
-	 * @returns AIS parsed Object
-	 */
- 	decode(input: string, session?: Session): any {
-		if (this.validateRawMessage(input) !== true) {
-			console.error('input is not valid');
-		}
-
-		this.bitarray=[];
-    this.valid= false; // will move to 'true' if parsing succeed
-
-    // split nmea message !AIVDM,1,1,,B,B69>7mh0?J<:>05B0`0e;wq2PHI8,0*3D'
-    let nmea = input.split (",");
-
-    // make sure we are facing a supported AIS message
-    // AIVDM for standard messages, AIVDO for messages from own ship AIS
-    if (nmea[0] !== Formatter.AIVDM && nmea[0] !== Formatter.AIVDO) {
-			console.error('Unknown Format');
-			return;
-		}
-
-    // check if buffer (data) exist
-    if (!nmea[5]) {
-			console.error('Buffer data is not found.');
-			return;
-		}
-
-    // the input string is part of a multipart message, make sure we were
-    // passed a session object.
-    const message_count: number = Number(nmea[1]);
-    const message_id: number = Number(nmea[2]);
-    const sequence_id: number = nmea[3] && nmea[3].length > 0 ? Number(nmea[3]) : NaN;
-
-    if(message_count > 1) {
-			if(Object.prototype.toString.call(session) !== "[object Object]") {
-				console.log(session)
-				console.error("A session object is required to maintain state for decoding multipart AIS messages.");
-			}
-
-			if(message_id > 1) {
-				if(nmea[0] !== session.formatter) {
-					console.log ("AisDecode: Sentence does not match formatter of current session");
-					return;
-				}
-
-				if(session[message_id - 1] === undefined) {
-					console.log ("AisDecode: Session is missing prior message part, cannot parse partial AIS message.");
-					return;
-				}
-
-				if(session.sequence_id !== sequence_id) {
-					console.log ("AisDecode: Session IDs do not match. Cannot recontruct AIS message.");
-					return;
-				}
-			} else {
-				session = ([undefined, null].indexOf(session) !== -1) ? undefined : session;
-				session.formatter = nmea[0] === Formatter.AIVDM ? Formatter.AIVDM : Formatter.AIVDO;
-				session.message_count = Number(message_count);
-				session.sequence_id = Number(sequence_id);
-			}
-		}
-
-		// extract binary payload and other usefull information from nmea paquet
-    try {
-      this.payload = new Buffer(nmea[5]);
-    } catch (err) {
-       console.log('Error nmea[5]', nmea[5]);
-			 console.error(err);
-			 throw new Error(err);
-    }
-		const channel = VHF_CHANNEL[nmea[4]]; // vhf channel A/B
-
-    if(message_count > 1) {
-        session[message_id] = {
-					payload: this.payload,
-					length: this.payload.length
-				};
-
-        // Not done building the session
-        if(message_id < message_count) {
-					return;
-				}
-
-        let payloads = [];
-        let len = 0;
-        for(let i = 1; i <= session.message_count; ++i) {
-            payloads.push(session[i].payload);
-            len += session[i].length;
-        }
-
-        this.payload = Buffer.concat(payloads, len);
-    }
-
-		this.bitarray = decodePayloadToBitArray(this.payload);
-
-    const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);
-    const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
-    const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
-		const mmsi	 : string = ("000000000" + immsi).slice(-9);
-
-		console.log({ mmsi, type: aisType });
-		if ([1,2,3].indexOf(aisType) !== -1) {
-			const report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
-			console.log(report);
-
-		} else if (aisType === 18) {
-			const sog = fetchSog(this.bitarray, aisType);
-			console.log({ sog });
-		}
-		else {
-			throw new Error(`AIS Type ${aisType} is not supported`);
-		}
+	getResults(): Array<any> {
+		return this.results;
 	}
 }
-
-function parsePositionReportClassA(bitArray: Array<number>, aisType:number, repeat: number, mmsi: string): Position_Report_Class_A {
-	const aisClass:string = 'A';
-	// Navigational status
-	const navStatus = parseIntFromBuffer(bitArray, 38, 4);
-	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
-	const sog = fetchSog(bitArray, aisType);
-	const rot = fetchRateOfTurn(bitArray, aisType);
-	const cog = fetchCourseOverGround(bitArray, aisType);
-	const hdg = fetchHeading(bitArray, aisType);
-	const status = fetchNavigationStatus(bitArray, aisType);
-	const accuracy = fetchAccuracy(bitArray, aisType);
-	const utc:number = 0;
-	const maneuver: string = '0';
-	const raim: string = '0';
-
-	const report = {
-		valid,
-		repeat,
-		mmsi,
-		type: aisType,
-		status,
-		cog,
-		sog,
-		rot,
-		hdg,
-		lon: longitude,
-		lat: latitude,
-		accuracy,
-		utc,
-		maneuver,
-		raim,
-	};
-	return report;
-};

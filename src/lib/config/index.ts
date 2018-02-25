@@ -13,36 +13,10 @@ export enum VHF_CHANNEL {
 	B = 'B'
 }
 
-const ATTR_META_DATA = {
-	1: {
-		sog: { index: 50, len: 10, units: 'knot' },
-		cog: { index: 116, len: 12, units: 'degree' },
-		rot: { index: 42, len: 8, units: 'degree/min' },
-		lng: { index: 61, len: 28, units: 'degree' },
-		lat: { index: 89, len: 27, units: 'degree' },
-		hdg: { index: 128, len: 9, units: 'degrees' },
-		status: { index: 38, len: 4 },
-		accuracy: { index: 60, len: 1, units: 'meters' },
-	},
-	4: {
-		lng: { index: 57, len: 28, units: 'degree' },
-		lat: { index: 85, len: 27, units: 'degree' },
-	},
-	9: {
-		accuracy: { index: 60, len: 1, units: 'meters' },
-	},
-	18: {
-		sog: { index: 46, len: 10, units: 'knot' },
-		cog: { index: 112, len: 12, units: 'degree' },
-		rot: { index: 46, len: 8, units: 'degree/min' },
-		lng: { index: 57, len: 28, units: 'degree' },
-		lat: { index: 85, len: 27, units: 'degree' },
-	},
-	21: {
-		lng: { index: 164, len: 28, units: 'degree' },
-		lat: { index: 192, len: 27, units: 'degree' },
-	}
-};
+export enum MESSAGE_PART {
+	A = 'A',
+	B = 'B'
+}
 
 const EPFD_TYPE = {
   0: 'Undefined',
@@ -54,6 +28,41 @@ const EPFD_TYPE = {
   6: 'Integrated navigation system',
   7: 'Surveyed',
   8: 'Galileo'
+};
+
+const NAVAID_TYPES = {
+	0: 'default', //Type of Aid to Navigation not specified
+	1: 'reference point',
+	2: 'RACON (radar transponder marking a navigation hazard)',
+	3: 'Fixed structure off shore, such as oil platforms, wind farms, rigs',
+	4: 'Spare, Reserved for future use.',
+	5: 'Light, without sectors',
+	6: 'Light, with sectors',
+	7: 'Leading Light Front',
+	8: 'Leading Light Rear',
+	9: 'Beacon, Cardinal N',
+	10: 'Beacon, Cardinal E',
+	11: 'Beacon, Cardinal S',
+	12: 'Beacon, Cardinal W',
+	13: 'Beacon, Port hand',
+	14: 'Beacon, Starboard hand',
+	15: 'Beacon, Preferred Channel port hand',
+	16: 'Beacon, Preferred Channel starboard hand',
+	17: 'Beacon, Isolated danger',
+	18: 'Beacon, Safe water',
+	19: 'Beacon, Special mark',
+	20: 'Cardinal Mark N',
+	21: 'Cardinal Mark E',
+	22: 'Cardinal Mark S',
+	23: 'Cardinal Mark W',
+	24: 'Port hand Mark',
+	25: 'Starboard hand Mark',
+	26: 'Preferred Channel Port hand',
+	27: 'Preferred Channel Starboard hand',
+	28: 'Isolated danger',
+	29: 'Safe Water',
+	30: 'Special Mark',
+	31: 'Light Vessel / LANBY / Rigs',
 };
 
 const MSG_TYPE = [
@@ -265,9 +274,6 @@ export function getStationInterval(code: number): string {
 		STATION_INTERVALS[code] : 'unknown interval';
 }
 
-export function getMetaDataForAttributeByReport(report: number): any {
-	if ([1,2,3].indexOf(report) !== -1) {
-		return ATTR_META_DATA[1];
-	}
-	return ATTR_META_DATA[report] ? ATTR_META_DATA[report] : {};
+export function getNavAidType(code: number): string {
+	return NAVAID_TYPES[code] ? NAVAID_TYPES[code] : NAVAID_TYPES[0];
 }

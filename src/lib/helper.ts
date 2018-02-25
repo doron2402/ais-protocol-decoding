@@ -1,12 +1,40 @@
 'use strict'
 
-import { getManeuverIndicator, Precision, getMetaDataForAttributeByReport, getNavStatus } from './config';
+import {
+  getManeuverIndicator,
+  Precision,
+  getNavStatus,
+  getEPFDType,
+} from './config';
+import { getMetaDataForAttributeByReport } from './config/attributes';
 import { parseIntFromBuffer, parseStringFromBuffer } from './bitsHelper';
+import { LatLngResponse, DATE_AND_TIME, Dimensions } from './interfaces/ais';
 
-interface LatLngResponse {
-  latitude: number,
-  longitude: number,
-  valid: boolean
+export function fetchIntByAttr(bitArray: Array<number>, aisType:number, attr: string): number {
+  const meta = getMetaDataForAttributeByReport(aisType)[attr];
+  if (!meta || !meta.len || !meta.index) {
+    console.log(`Cannot find meta for aisType: ${aisType}, attribute: ${attr}`);
+    return 0;
+  }
+  return parseIntFromBuffer(bitArray, meta.index, meta.len);
+}
+
+export function fetchStringByAttr(bitArray: Array<number>, aisType:number, attr: string): string {
+  const meta = getMetaDataForAttributeByReport(aisType)[attr];
+  if (!meta || !meta.len || !meta.index) {
+    console.log(`Cannot find meta for aisType: ${aisType}, attribute: ${attr}`);
+    return '_';
+  }
+  return parseStringFromBuffer(bitArray, meta.index, meta.len);
+}
+
+export function getDimensions(bitArray: Array<number>, aisType:number): Dimensions {
+  return {
+    to_bow: fetchIntByAttr(bitArray, aisType, 'to_bow'),
+    to_stern: fetchIntByAttr(bitArray, aisType, 'to_stern'),
+    to_port: fetchIntByAttr(bitArray, aisType, 'to_port'),
+    to_starboard: fetchIntByAttr(bitArray, aisType, 'to_starboard'),
+  };
 }
 
 export function decodePayloadToBitArray(input:Array<number>): Array<number> {
@@ -35,7 +63,7 @@ export function decodePayloadToBitArray(input:Array<number>): Array<number> {
   return bitarray;
 }
 
-export function getLatAndLng(bitarray: Array<number>, aisType: number): LatLngResponse {
+export function getLatAndLng(bitArray: Array<number>, aisType: number): LatLngResponse {
   /**
    * Longitude is given in in 1/10000 min;
    * divide by 600000.0 to obtain degrees.
@@ -55,19 +83,13 @@ export function getLatAndLng(bitarray: Array<number>, aisType: number): LatLngRe
    * indicates latitude is not available and is the default.
    *
    */
-  const meta = getMetaDataForAttributeByReport(aisType);
-  const meta_lat = meta.lat;
-  const meta_lng = meta.lng;
-  let lng = parseIntFromBuffer(bitarray, meta_lng.index, meta_lng.len);
+
+  let lng = fetchIntByAttr(bitArray, aisType, 'lng');
   if (lng & 0x08000000) {
     lng |= 0xf0000000;
   }
   lng = parseFloat(String(lng/600000));
-  let lat = parseIntFromBuffer(
-    bitarray,
-    meta_lat.index,
-    meta_lat.len
-  );
+  let lat = fetchIntByAttr(bitArray, aisType, 'lat');
   if(lat & 0x04000000) {
     lat |= 0xf8000000;
   }
@@ -98,11 +120,7 @@ export function fetchSog(bitArray: Array<number>, aisType): number {
   const meta = getMetaDataForAttributeByReport(aisType)['sog'];
   let sog: number = undefined; // sog should be undefined by default
   try {
-    const _sog: number = parseIntFromBuffer(
-      bitArray,
-      meta.index,
-      meta.len
-    );
+    const _sog: number = fetchIntByAttr(bitArray, aisType, 'sog');
     if (!isNaN(_sog) && _sog !== 1023) {
       sog = Number(parseFloat(String(0.1 * _sog)).toFixed(Precision));
     }
@@ -125,9 +143,8 @@ export function fetchRateOfTurn(bitArray: Array<number>, aisType:number): number
    * Values between 0 and 708 degrees/min coded by ROTAIS=4.733 * SQRT(ROTsensor) degrees/min where ROTsensor is the Rate of Turn as input by an external Rate of Turn Indicator. ROTAIS is rounded to the nearest integer value. Thus, to decode the field value, divide by 4.733 and then square it. Sign of the field value should be preserved when squaring it, otherwise the left/right indication will be lost.
    *
   */
-  const meta = getMetaDataForAttributeByReport(aisType)['rot'];
   let rot: number = undefined;
-  let _rot = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  let _rot = fetchIntByAttr(bitArray, aisType, 'rot');
   let rotDirection:number = 1.0;
   if (_rot === 128) {
     _rot = -128;
@@ -171,18 +188,49 @@ export function fetchNavigationStatus(bitArray: Array<number>, aisType: number):
   return getNavStatus(statusCode);
 }
 
-export function fetchAccuracy(bitArray: Array<number>, aisType: number): number {
-  /**
-   * The position accuracy flag indicates the accuracy of the fix.
-   * A value of 1 indicates a DGPS-quality fix with an accuracy of < 10ms.
-   * 0, the default, indicates an unaugmented GNSS fix with accuracy > 10m.
-   */
-  const meta = getMetaDataForAttributeByReport(aisType)['accuracy'];
-  const accuracy:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
-  if (accuracy === 1) {
-    return 1;
-  }
-  // return default value '0'
-  return 0;
+export function fetchCSUnit(bitArray: Array<number>, aisType:number): number {
+  // 0=Class B SOTDMA unit
+  // 1=Class B CS (Carrier Sense) unit
+  const meta = getMetaDataForAttributeByReport(aisType)['cs'];
+  const cs:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  return cs;
 }
 
+export function fetchDisplayFlag(bitArray: Array<number>, aisType:number): number {
+  // 0=No visual display,
+  // 1=Has display, (Probably not reliable).
+  const meta = getMetaDataForAttributeByReport(aisType)['display'];
+  const display:number = parseIntFromBuffer(bitArray, meta.index, meta.len);
+  return display;
+}
+
+export function fetchDateAndTime(bitArray: Array<number>, aisType:number): DATE_AND_TIME {
+  let year: number = 0;
+  let month: number = 0;
+  let day: number = 0;
+  let hour: number = 0;
+  let minute: number = 0;
+  let second: number = 0;
+  if (([5,4]).indexOf(aisType) !== -1) {
+    month = fetchIntByAttr(bitArray, aisType, 'month');
+    day = fetchIntByAttr(bitArray, aisType, 'day');
+    hour = fetchIntByAttr(bitArray, aisType, 'hour');
+    minute = fetchIntByAttr(bitArray, aisType, 'minute');
+  }
+
+  if ([4].indexOf(aisType) !== -1) {
+    year = fetchIntByAttr(bitArray, aisType, 'year');
+    second = fetchIntByAttr(bitArray, aisType, 'second');
+  }
+
+  return { year, month, day, hour, minute, second };
+}
+
+export function fetchDraught(bitArray: Array<number>, aisType:number): number {
+  return fetchIntByAttr(bitArray, aisType, 'draught');
+}
+
+export function fetchEPFD(bitArray: Array<number>, aisType:number): string {
+  const epfdCode:number = fetchIntByAttr(bitArray, aisType, 'epfd');
+  return getEPFDType(epfdCode);
+}
