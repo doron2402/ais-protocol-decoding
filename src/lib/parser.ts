@@ -17,7 +17,6 @@ import {
 	fetchDisplayFlag,
 	fetchDateAndTime,
 	fetchDraught,
-	fetchDTE,
 } from './helper';
 import {
 	Position_Report_Class_A,
@@ -128,7 +127,7 @@ export function parseStaticVoyageRelatedData(
 		to_stern,
 		draught: fetchDraught(bitArray, aisType),
 		destination: fetchStringByAttr(bitArray, aisType, 'destination'),
-		dte: fetchDTE(bitArray, aisType)
+		dte: fetchIntByAttr(bitArray, aisType, 'dte'),
 	};
 	return report;
 }
