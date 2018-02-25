@@ -21,7 +21,7 @@ export function fetchIntByAttr(bitArray: Array<number>, aisType:number, attr: st
 
 export function fetchStringByAttr(bitArray: Array<number>, aisType:number, attr: string): string {
   const meta = getMetaDataForAttributeByReport(aisType)[attr];
-  if (!meta.len || !meta.index) {
+  if (!meta || !meta.len || !meta.index) {
     console.log(`Cannot find meta for aisType: ${aisType}, attribute: ${attr}`);
     return '_';
   }
@@ -228,10 +228,6 @@ export function fetchDateAndTime(bitArray: Array<number>, aisType:number): DATE_
 
 export function fetchDraught(bitArray: Array<number>, aisType:number): number {
   return fetchIntByAttr(bitArray, aisType, 'draught');
-}
-
-export function fetchDTE(bitArray: Array<number>, aisType:number): string {
-  return fetchStringByAttr(bitArray, aisType, 'dte');
 }
 
 export function fetchEPFD(bitArray: Array<number>, aisType:number): string {

@@ -13,6 +13,11 @@ export enum VHF_CHANNEL {
 	B = 'B'
 }
 
+export enum MESSAGE_PART {
+	A = 'A',
+	B = 'B'
+}
+
 const EPFD_TYPE = {
   0: 'Undefined',
   1: 'GPS',

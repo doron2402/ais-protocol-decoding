@@ -32,7 +32,7 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
     for(var j=0 ; j < 6 ; j++){
       acc  = acc << 1;
       cp =   Math.floor((start + i) / 6);
-      cx = this.bitarray[cp];
+      cx = bitArray[cp];
       cs = 5 - ((start + i) % 6);
       c0 = (cx >> (5 - ((start + i) % 6))) & 1;
       acc |= c0;

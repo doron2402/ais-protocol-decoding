@@ -23,8 +23,10 @@ import {
 	Position_Report_Class_A,
 	Standard_Class_B_CS_Position_Report,
 	Base_Station_Report,
-	Static_Voyage_Related_Data
+	Static_Voyage_Related_Data,
+	Static_Data_Report
 } from './interfaces/ais';
+import { MESSAGE_PART } from './config';
 
 // Type 1,2,3
 export function parsePositionReportClassA(
@@ -173,4 +175,37 @@ export function parseStandardClassBPositionReport(
 		display
 	};
 	return report;
+}
+
+// Type 24
+export function parseStaticDataReport(
+  bitArray: Array<number>,
+  aisType:number,
+	repeat: number,
+	part: MESSAGE_PART,
+  mmsi: string
+): Static_Data_Report {
+	if (part === 'A') {
+		return {
+			type: aisType,
+			repeat,
+			mmsi,
+			partno: fetchIntByAttr(bitArray, aisType, 'partno'),
+			shipname: fetchStringByAttr(bitArray, aisType, 'shipname')
+		}
+	} else {
+		const { to_bow, to_port, to_starboard, to_stern } = getDimensions(bitArray, aisType);
+		return {
+			shiptype: fetchStringByAttr(bitArray, aisType, 'shiptype'),
+			vendorid: fetchIntByAttr(bitArray, aisType, 'vendorid'),
+			model: fetchIntByAttr(bitArray, aisType, 'model'),
+			serial: fetchIntByAttr(bitArray, aisType, 'serial'),
+			callsign: fetchIntByAttr(bitArray, aisType, 'callsign'),
+			to_bow,
+			to_port,
+			to_starboard,
+			to_stern,
+			mothership_mmsi: String(fetchIntByAttr(bitArray, aisType, 'mothership_mmsi')),
+		}
+	}
 }

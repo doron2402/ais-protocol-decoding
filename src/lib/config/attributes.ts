@@ -184,6 +184,20 @@ const ATTR_META_DATA = {
 		raim: { index: 268, len: 1 },
 		virtual_aid: { index: 269, len: 1 },
 		assigned: { index: 270, len: 1 },
+	},
+	24: {
+		partno: { index: 38, len: 2 },
+		shipname: { index: 40, len: 120 },
+		shiptype: { index: 40, len: 8 },
+		vendorid: { index: 48, len: 18 },
+		model: { index: 66, len: 4 },
+		serial: { index: 70, len: 20 },
+		callsign: { index: 90, len: 42 },
+		to_bow: { index: 132, len: 9, units: 'meters' },
+		to_stern: { index: 141, len: 9, units: 'meters' },
+		to_port: { index: 150, len: 6, units: 'meters' },
+		to_starboard: { index: 156, len: 6, units: 'meters' },
+		mothership_mmsi: { index: 132, len: 30 },
 	}
 };
 

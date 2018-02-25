@@ -114,7 +114,7 @@ extends Basic_AIS, Dimensions {
   minute: number, // 0-59, 60=N/A (default)
   draught: number, // meters/10
   destination: string, // 20 6-bit characters
-  dte: string
+  dte: number
 }
 
 /**
@@ -433,16 +433,22 @@ export interface Group_Assignment_Command extends Basic_AIS {
  * However, in the wild, A parts are often transmitted with only 160 bits,
  * omitting the spare 7 bits at the end. Implementers should be permissive about this.
  */
-export interface Static_Data_Report
-extends Basic_AIS, Dimensions {
-  partno: number,
-  shipname: string,
-  shiptype: string,
-  vendorid: number,
-  model: number,
-  serial: number,
-  callsign: number,
-  mothership_mmsi: number
+export interface Static_Data_Report {
+  type?: number, // Constant: 24
+  repeat?: number, // Message repeat count (As in CNB - Common Navigation Block Type: 1,2,3)
+  mmsi?: string, // MMSI
+  to_bow?: number, // Part B Dimension to Bow (meters)
+  to_stern?: number, // Part B Dimension to Stern (meters)
+  to_port?: number, // Part B Dimension to Port (meters)
+  to_starboard?: number, // Part B Dimension to Starboard (meters)
+  partno?: number,
+  shipname?: string, // (Part A) 20 sixbit chars
+  shiptype?: string, // Part B See "Ship Types"
+  vendorid?: number,// Part B 3 six-bit chars
+  model?: number, // Part B
+  serial?: number, // Part B
+  callsign?: number, // Part B As in Message Type 5
+  mothership_mmsi?: string // Part B
 }
 
 
