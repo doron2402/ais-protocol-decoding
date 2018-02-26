@@ -4,11 +4,12 @@ const ATTR_META_DATA = {
 		sog: { index: 50, len: 10, units: 'knot' },
 		cog: { index: 116, len: 12, units: 'degree' },
 		rot: { index: 42, len: 8, units: 'degree/min' },
-		lng: { index: 61, len: 28, units: 'degree' },
+		lon: { index: 61, len: 28, units: 'degree' },
 		lat: { index: 89, len: 27, units: 'degree' },
 		hdg: { index: 128, len: 9, units: 'degrees' },
 		status: { index: 38, len: 4 },
 		accuracy: { index: 60, len: 1, units: 'meters' },
+		raim: { index: 148, len: 1 }
 	},
 	4: {
 		type: { index: 0, len: 6 },
@@ -21,7 +22,7 @@ const ATTR_META_DATA = {
 		minute: { index: 66, len: 6 },
 		second: { index: 72, len: 6 },
 		accuracy: { index: 78, len: 1 },
-		lng: { index: 79, len: 28, units: 'degree' },
+		lon: { index: 79, len: 28, units: 'degree' },
 		lat: { index: 107, len: 27, units: 'degree' },
 		epfd: { index: 134, len: 4, units: 'See "EPFD Fix Types"' },
 		raim: { index: 148, len: 1 },
@@ -71,7 +72,7 @@ const ATTR_META_DATA = {
 		repeat: { index: 6, len: 2 },
 		mmsi: { index: 8, len: 30 },
 		alt: { index: 38, len: 12 },
-		speed: { index: 50, len: 10 },
+		sog: { index: 50, len: 10 },
 		accuracy: { index: 60, len: 1, units: 'meters' },
 		lon: { index: 61, len: 28 },
 		lat: { index: 89, len: 27 },
@@ -117,7 +118,7 @@ const ATTR_META_DATA = {
 		sog: { index: 46, len: 10, units: 'knot' },
 		cog: { index: 112, len: 12, units: 'degree' },
 		rot: { index: 46, len: 8, units: 'degree/min' },
-		lng: { index: 57, len: 28, units: 'degree' },
+		lon: { index: 57, len: 28, units: 'degree' },
 		lat: { index: 85, len: 27, units: 'degree' },
 		regional: { index: 139, len: 2, units: 'uninterpreted' },
 		cs: { index: 141, len: 1, units: 'boolean' },
@@ -133,7 +134,7 @@ const ATTR_META_DATA = {
 	19: {
 		sog: { index: 46, len: 10, units: 'knot' },
 		accuracy: { index: 56, len: 1, units: '' },
-		lng: { index: 57, len: 28, units: 'degree' },
+		lon: { index: 57, len: 28, units: 'degree' },
 		lat: { index: 85, len: 27, units: 'degree' },
 		cog: { index: 112, len: 12, units: 'degrees' },
 		hdg: { index: 124, len: 9, units: 'degrees' },
@@ -148,6 +149,7 @@ const ATTR_META_DATA = {
 		raim: { index: 305, len: 1, units: '' },
 		dte: { index: 306, len: 1, units: '' },
 		assigned: { index: 307, len: 1, units: '' },
+		reserved: { index: 38, len: 8 }
 	},
 	20: {
 		offset1: { index: 40, len: 12 },
@@ -171,14 +173,14 @@ const ATTR_META_DATA = {
 		aid_type: { index: 38, len: 5 }, // see Navaid Types
 		name: { index: 43, len: 120 },
 		accuracy: { index: 163, len: 1 },
-		lng: { index: 164, len: 28, units: 'degree' },
+		lon: { index: 164, len: 28, units: 'degree' },
 		lat: { index: 192, len: 27, units: 'degree' },
 		to_bow: { index: 219, len: 9, units: 'meters' },
 		to_stern: { index: 228, len: 9, units: 'meters' },
 		to_port: { index: 237, len: 6, units: 'meters' },
 		to_starboard: { index: 243, len: 6, units: 'meters' },
 		epfd: { index: 249, len: 4, units: '' },
-		second: {},
+		second: { index: 253, len: 6 },
 		off_position: {},
 		regional: { index: 259, len: 1 },
 		raim: { index: 268, len: 1 },
@@ -198,6 +200,21 @@ const ATTR_META_DATA = {
 		to_port: { index: 150, len: 6, units: 'meters' },
 		to_starboard: { index: 156, len: 6, units: 'meters' },
 		mothership_mmsi: { index: 132, len: 30 },
+	},
+	27: {
+		accuracy: { index: 38, len: 1 },
+		raim: { index: 39, len: 1, units: 'boolean' },
+		status: { index: 40, len: 4 },
+		// Longitude: minutes/10 East positive, West negative 181000 = N/A (default)
+		lon: { index: 44, len: 18, units: 'degree' },
+		// Latitude: minutes/10 North positive, South negative 91000 = N/A (default)
+		lat: { index: 62, len: 17, units: 'degree' },
+		// Knots (0-62); 63 = N/A (default)
+		sog: { index: 50, len: 10, units: 'knot' },
+		// 0 to 359 degrees, 511 = not available.
+		cog: { index: 85, len: 9, units: 'degree' },
+		// 0 = current GNSS position 1 = not GNSS position (default)
+		gnss: { index: 94, len: 1 },
 	}
 };
 

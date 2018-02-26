@@ -5,6 +5,7 @@ import {
   Precision,
   getNavStatus,
   getEPFDType,
+  getNavAidType
 } from './config';
 import { getMetaDataForAttributeByReport } from './config/attributes';
 import { parseIntFromBuffer, parseStringFromBuffer } from './bitsHelper';
@@ -84,11 +85,11 @@ export function getLatAndLng(bitArray: Array<number>, aisType: number): LatLngRe
    *
    */
 
-  let lng = fetchIntByAttr(bitArray, aisType, 'lng');
-  if (lng & 0x08000000) {
-    lng |= 0xf0000000;
+  let lon = fetchIntByAttr(bitArray, aisType, 'lon');
+  if (lon & 0x08000000) {
+    lon |= 0xf0000000;
   }
-  lng = parseFloat(String(lng/600000));
+  lon = parseFloat(String(lon/600000));
   let lat = fetchIntByAttr(bitArray, aisType, 'lat');
   if(lat & 0x04000000) {
     lat |= 0xf8000000;
@@ -96,12 +97,41 @@ export function getLatAndLng(bitArray: Array<number>, aisType: number): LatLngRe
   lat = parseFloat(String(lat/600000));
   // Check if valid
   let valid = false;
-  if (lng <= 180. && lat <= 90. ) {
+  if (lon <= 180. && lat <= 90. ) {
     valid = true;
   }
   return {
     latitude: lat,
-    longitude: lng,
+    longitude: lon,
+    valid
+  };
+}
+
+export function fetchLatitudeAndLongitude10Deg(bitArray:Array<number>, aisType): LatLngResponse {
+  let lon = fetchIntByAttr(bitArray, aisType, 'lon');
+  if (lon & 0x08000000) {
+    lon |= 0xf0000000;
+  }
+  lon = parseFloat(String(lon/600));
+  let lat = fetchIntByAttr(bitArray, aisType, 'lat');
+  if(lat & 0x04000000) {
+    lat |= 0xf8000000;
+  }
+  lat = parseFloat(String(lat/3000));
+  // Check if valid
+  let valid = true;
+  if (lon > 180.) {
+    valid = false;
+    lon = null;
+  }
+  if (lat > 90.) {
+    valid = false;
+    lat = null;
+  }
+
+  return {
+    latitude: lat,
+    longitude: lon,
     valid
   };
 }
@@ -161,25 +191,19 @@ export function fetchCourseOverGround(bitArray: Array<number>, aisType: number):
    * Course over ground in 1/10 = (0-3599). 3600 (E10h) = not available = default. 3 601-4 095 should not be used
    * Course over ground will be 3600 (0xE10) if that data is not available.
    */
-  const meta = getMetaDataForAttributeByReport(aisType)['cog'];
-  const _cog = parseIntFromBuffer(bitArray, meta.index, meta.len);
-  if (_cog === 3600) {
-    return undefined;
-  }
-  const cog = Number(parseFloat(String(0.1 * _cog)).toFixed(Precision));
-  return cog;
+  const cog:number = fetchIntByAttr(bitArray, aisType, 'cog');
+  return cog === 3600 ?
+    undefined :
+    Number(parseFloat(String(0.1 * cog)).toFixed(Precision));
 }
 
 export function fetchHeading(bitArray: Array<number>, aisType: number): number {
   // True Heading (hdg)
   // 0 to 359 degrees, 511 = not available.
-  const meta = getMetaDataForAttributeByReport(aisType)['hdg'];
-  const _hdg = parseIntFromBuffer(bitArray, meta.index, meta.len);
-  if (_hdg === 511) {
-    return undefined;
-  }
-  const hdg = Number(parseFloat(String(0.1 * _hdg)).toFixed(Precision));
-  return hdg;
+  const hdg:number = fetchIntByAttr(bitArray, aisType, 'hdg');
+  return hdg === 511 ?
+    undefined :
+    Number(parseFloat(String(hdg)).toFixed(Precision));
 }
 
 export function fetchNavigationStatus(bitArray: Array<number>, aisType: number): string {
@@ -226,11 +250,12 @@ export function fetchDateAndTime(bitArray: Array<number>, aisType:number): DATE_
   return { year, month, day, hour, minute, second };
 }
 
-export function fetchDraught(bitArray: Array<number>, aisType:number): number {
-  return fetchIntByAttr(bitArray, aisType, 'draught');
-}
-
 export function fetchEPFD(bitArray: Array<number>, aisType:number): string {
   const epfdCode:number = fetchIntByAttr(bitArray, aisType, 'epfd');
   return getEPFDType(epfdCode);
+}
+
+export function fetchAidType(bitArray:Array<number>, aisType:number): string {
+  const aidTypeCode:number = fetchIntByAttr(bitArray, aisType, 'aid_type');
+  return getNavAidType(aidTypeCode);
 }

@@ -9,6 +9,13 @@ import {
 	parseBaseStationReport,
 	parseStaticDataReport,
 	parseBinaryAddressedMessage,
+	parseBinaryAcknowledge,
+	parseLongRangeAISBroadcastMessage,
+	parseBinaryBroadcastMessage,
+	parseStandardSARAircraftPositionReport,
+	parseSafetyRelatedBroadcastMessage,
+	parserExtendedClassBCSPositionReport,
+	parseAidNavigationReport
 } from './parser';
 
 import { Formatter, VHF_CHANNEL, MESSAGE_PART } from './config';
@@ -129,12 +136,14 @@ export class Decoder {
     const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
 		const mmsi	 : string = ("000000000" + immsi).slice(-9);
 		let report;
+
 		switch (aisType) {
 			case 1:
 			case 2:
 			case 3:
 				report = parsePositionReportClassA(this.bitarray, aisType, repeat, mmsi);
 				break;
+			case 11:
 			case 4:
 				report = parseBaseStationReport(this.bitarray, aisType, repeat, mmsi);
 				break;
@@ -144,14 +153,36 @@ export class Decoder {
 			case 6:
 				report = parseBinaryAddressedMessage(this.bitarray, aisType, repeat, mmsi);
 				break;
+			case 7:
+				report = parseBinaryAcknowledge(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 8:
+				report = parseBinaryBroadcastMessage(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 9:
+				report = parseStandardSARAircraftPositionReport(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 14:
+				report = parseSafetyRelatedBroadcastMessage(this.bitarray, aisType, repeat, mmsi);
+				break;
 			case 18:
 				report = parseStandardClassBPositionReport(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 19:
+				report = parserExtendedClassBCSPositionReport(this.bitarray, aisType, repeat, mmsi);
+				break;
+			case 21:
+				report = parseAidNavigationReport(this.bitarray, aisType, repeat, mmsi);
 				break;
 			case 24:
 				const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
 				report = parseStaticDataReport(this.bitarray, aisType, repeat, part, mmsi)
 				break;
+			case 27:
+				report = parseLongRangeAISBroadcastMessage(this.bitarray, aisType, repeat, mmsi);
+				break;
 			default:
+				console.log(`Unsupported AIS Type: ${aisType} - ${mmsi}`);
 				break;
 		}
 
