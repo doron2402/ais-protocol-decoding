@@ -1,5 +1,5 @@
 {
-  "name": "ais-decoder",
+  "name": "ais-decoder-ts",
   "version": "1.0.0",
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
