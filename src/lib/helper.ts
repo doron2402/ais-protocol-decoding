@@ -107,17 +107,26 @@ export function getLatAndLng(bitArray: Array<number>, aisType: number): LatLngRe
   };
 }
 
-export function fetchLatitudeAndLongitude10Deg(bitArray:Array<number>, aisType): LatLngResponse {
+/**
+ *
+ * @param bitArray Array<number>
+ * @param aisType Number (AIS type 1-27)
+ * @returns { latitude: number, longitude: number, valid: boolean }
+ *
+ * Longitude: minutes/10 East positive, West negative 181000 = N/A (default)
+ * Latitude: minutes/10 North positive, South negative 91000 = N/A (default)
+ */
+export function fetchLatitudeAndLongitude10Deg(bitArray:Array<number>, aisType: number): LatLngResponse {
   let lon = fetchIntByAttr(bitArray, aisType, 'lon');
   if (lon & 0x08000000) {
     lon |= 0xf0000000;
   }
-  lon = parseFloat(String(lon/600));
+  lon = parseFloat(String(lon * 0.0009078957452703937));
   let lat = fetchIntByAttr(bitArray, aisType, 'lat');
   if(lat & 0x04000000) {
     lat |= 0xf8000000;
   }
-  lat = parseFloat(String(lat/3000));
+  lat = parseFloat(String(lat * 0.0016654223855739965));
   // Check if valid
   let valid = true;
   if (lon > 180.) {
