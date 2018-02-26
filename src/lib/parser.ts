@@ -17,6 +17,7 @@ import {
 	fetchDisplayFlag,
 	fetchDateAndTime,
 	fetchLatitudeAndLongitude10Deg,
+	fetchAidType
 } from './helper';
 import {
 	Position_Report_Class_A,
@@ -26,7 +27,12 @@ import {
 	Static_Data_Report,
 	Binary_Addressed_Message,
 	Binary_Acknowledge,
-	Long_Range_AIS_Broadcast
+	Long_Range_AIS_Broadcast,
+	Binary_Broadcast_Message,
+	Standard_SAR_Aircraft_Position_Report,
+	Safety_Related_Broadcast_Message,
+	Extended_Class_B_CS_Position_Report,
+	Aid_Navigation_Report
 } from './interfaces/ais';
 import { MESSAGE_PART } from './config';
 
@@ -48,7 +54,7 @@ export function parsePositionReportClassA(
 	const accuracy = fetchIntByAttr(bitArray, aisType, 'accuracy') === 1 ? 1 : 0;
 	const utc:number = 0;
 	const maneuver: string = '0';
-	const raim: string = '0';
+	const raim = fetchIntByAttr(bitArray, aisType, 'raim') === 1 ? 1 : 0;
 	const report = {
 		valid,
 		repeat,
@@ -171,6 +177,65 @@ export function parseBinaryAcknowledge(bitArray: Array<number>,
 	}
 }
 
+// Type 8
+export function parseBinaryBroadcastMessage(
+	bitArray: Array<number>,
+  aisType:number,
+  repeat: number,
+  mmsi: string
+): Binary_Broadcast_Message {
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		dac: fetchIntByAttr(bitArray, aisType, 'dac'),
+		fid: fetchIntByAttr(bitArray, aisType, 'fid'),
+		data: fetchStringByAttr(bitArray, aisType, 'data'),
+	}
+}
+
+// Type 9
+export function parseStandardSARAircraftPositionReport (
+	bitArray: Array<number>,
+  aisType:number,
+  repeat: number,
+	mmsi: string
+): Standard_SAR_Aircraft_Position_Report {
+	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		alt: fetchIntByAttr(bitArray, aisType, 'alt'),
+		accuracy: fetchIntByAttr(bitArray, aisType, 'accuracy'),
+		lat: latitude,
+		lon: longitude,
+		valid,
+		second: fetchIntByAttr(bitArray, aisType, 'second'),
+		dte: fetchIntByAttr(bitArray, aisType, 'dte'),
+		sog: fetchSog(bitArray, aisType),
+		cog: fetchCourseOverGround(bitArray, aisType),
+		regional: fetchIntByAttr(bitArray, aisType, 'regional'),
+		assigned: fetchIntByAttr(bitArray, aisType, 'assigned'),
+		raim: fetchIntByAttr(bitArray, aisType, 'raim') === 1 ? 1 : 0,
+		radio: fetchIntByAttr(bitArray, aisType, 'radio'),
+	}
+}
+
+export function parseSafetyRelatedBroadcastMessage(
+	bitArray: Array<number>,
+  aisType:number,
+  repeat: number,
+  mmsi: string
+): Safety_Related_Broadcast_Message {
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		text: fetchStringByAttr(bitArray, aisType, 'text'),
+	}
+};
+
 // Type 18
 export function parseStandardClassBPositionReport(
   bitArray: Array<number>,
@@ -188,7 +253,7 @@ export function parseStandardClassBPositionReport(
 	const accuracy = fetchIntByAttr(bitArray, aisType, 'accuracy') === 1 ? 1 : 0;
 	const utc:number = 0;
 	const maneuver: string = '0';
-	const raim: string = '0';
+	const raim = fetchIntByAttr(bitArray, aisType, 'raim') === 1 ? 1 : 0;
 	const band:number = fetchIntByAttr(bitArray, aisType, 'band');
 	const cs:number = fetchCSUnit(bitArray, aisType);
 	const display:number = fetchDisplayFlag(bitArray, aisType);
@@ -214,6 +279,76 @@ export function parseStandardClassBPositionReport(
 	return report;
 }
 
+// Type 19
+export function parserExtendedClassBCSPositionReport(
+	bitArray: Array<number>,
+  aisType:number,
+	repeat: number,
+  mmsi: string
+): Extended_Class_B_CS_Position_Report {
+	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
+	const { to_bow, to_port, to_starboard, to_stern } = getDimensions(bitArray, aisType);
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		reserved: fetchIntByAttr(bitArray, aisType, 'reserved'),
+		sog: fetchSog(bitArray, aisType),
+		accuracy: fetchIntByAttr(bitArray, aisType, 'accuracy'),
+		lon: longitude,
+		lat: latitude,
+		valid,
+		cog: fetchCourseOverGround(bitArray, aisType),
+		hdg: fetchHeading(bitArray, aisType),
+		utc: fetchIntByAttr(bitArray, aisType, 'utc'),
+		shipname: fetchStringByAttr(bitArray, aisType, 'shipname'),
+		shiptype: fetchStringByAttr(bitArray, aisType, 'shiptype'),
+		epfd: fetchEPFD(bitArray, aisType),
+		to_bow,
+		to_port,
+		to_starboard,
+		to_stern
+	}
+}
+
+// type 21
+export function parseAidNavigationReport(
+	bitArray: Array<number>,
+  aisType:number,
+	repeat: number,
+  mmsi: string
+): Aid_Navigation_Report {
+	const { to_bow, to_port, to_starboard, to_stern } = getDimensions(bitArray, aisType);
+	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
+	return {
+		type: aisType,
+		repeat,
+		mmsi,
+		aid_type: fetchAidType(bitArray, aisType),
+		name: fetchStringByAttr(bitArray, aisType, 'name'),
+		accuracy: fetchIntByAttr(bitArray, aisType, 'accuracy') === 1 ? 1 : 0,
+		lon: longitude,
+		lat: latitude,
+		valid,
+		to_bow,
+		to_port,
+		to_starboard,
+		to_stern,
+		epfd: fetchEPFD(bitArray, aisType),
+		second: fetchIntByAttr(bitArray, aisType, 'second'),
+		// The Off-Position Indicator is for floating Aids-to-Navigation only: 0 means on position;
+		// 1 means off position. Only valid if UTC second is equal to or below 59.
+		off_position: fetchIntByAttr(bitArray, aisType, 'off_position'),
+		regional: fetchIntByAttr(bitArray, aisType, 'regional'),
+		assigned: fetchIntByAttr(bitArray, aisType, 'assigned'),
+		raim: fetchIntByAttr(bitArray, aisType, 'raim') === 1 ? 1 : 0,
+		// The Virtual Aid flag is interpreted as follows:
+		// 0 = default = real Aid to Navigation at indicated position;
+		// 1 = virtual Aid to Navigation simulated by nearby AIS station.
+		virtual_aid: fetchIntByAttr(bitArray, aisType, 'virtual_aid') === 1 ? 1 : 0,
+	}
+}
+
 // Type 24
 export function parseStaticDataReport(
   bitArray: Array<number>,
@@ -233,6 +368,9 @@ export function parseStaticDataReport(
 	} else {
 		const { to_bow, to_port, to_starboard, to_stern } = getDimensions(bitArray, aisType);
 		return {
+			type: aisType,
+			repeat,
+			mmsi,
 			shiptype: fetchStringByAttr(bitArray, aisType, 'shiptype'),
 			vendorid: fetchIntByAttr(bitArray, aisType, 'vendorid'),
 			model: fetchIntByAttr(bitArray, aisType, 'model'),

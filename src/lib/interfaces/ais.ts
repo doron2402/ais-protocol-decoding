@@ -67,7 +67,7 @@ export interface Position_Report_Class_A extends Basic_AIS, LatitudeAndLongitude
   //  0 = RAIM not in use (default),
   // 1 = RAIM in use.
   // See [RAIM] for a detailed description of this flag.
-  raim?: string,
+  raim?: number,
   radio?: string
 }
 
@@ -178,10 +178,14 @@ export interface Binary_Broadcast_Message extends Basic_AIS {
  * Total number of bits is 168.
  */
 export interface Standard_SAR_Aircraft_Position_Report extends Basic_AIS, LatitudeAndLongitude, Navigation {
-  altitude: number,
+  alt: number,
   accuracy: number,
-  utc: number, // UTC second.
-  dte: number
+  second: number, // UTC second.
+  dte: number,
+  regional?: number,
+  assigned?: number,
+  raim?: number, // As for common navigation block (0 or 1)
+  radio?: number
 }
 
 /**
@@ -324,7 +328,8 @@ extends Basic_AIS, LatitudeAndLongitude, Dimensions, Navigation {
   utc: number, // Second of UTC timestamp.
   shipname: string,
   shiptype: string,
-  epfd: string
+  epfd: string,
+  reserved: number
 }
 
 /**
@@ -367,9 +372,16 @@ extends Basic_AIS, LatitudeAndLongitude, Dimensions {
   name: string,
   accuracy: number,
   epfd: string,
-  utc: number,
+  second: number,
   off_position: number, // The Off-Position Indicator is for floating Aids-to-Navigation only:
   // 0 means on position; 1 means off position. Only valid if UTC second is equal to or below 59.
+  regional?: number,
+  assigned?: number,
+  raim?: number,
+  // The Virtual Aid flag is interpreted as follows:
+  // 0 = default = real Aid to Navigation at indicated position;
+  // 1 = virtual Aid to Navigation simulated by nearby AIS station.
+  virtual_aid: number
 }
 
 /**
