@@ -25,16 +25,32 @@ export class Decoder {
 	payload: any;
 	valid: boolean;
 	results: Array<any> = [];
-
-	constructor(private messages: Array<string>) {
+	private _safeMode: boolean = false;
+	/**
+	 *
+	 * @param messages Array<String> for example `['!AIVDM,1,1,,B,KC5E2b@U19PFdLbMuc5=ROv62<7m,0*16']`
+	 * @param safeMode Boolean when set to true the module will never throw an error
+	 * @returns void
+	 *
+	 * the constructor will loop through the messages
+	 * and decode them. in order to get the results call `.getResults()`
+	 */
+	constructor(private messages: Array<string>, safeMode?: boolean) {
+		this._safeMode = safeMode === true ? true : false;
 		if (messages.length < 1) {
-			throw new Error('input must be an array');
+			if (this._safeMode !== true) {
+				throw new Error('input must be an array');
+			}
+			return;
 		}
 		this.results = [];
 		let session:object = {};
 		messages.forEach((item) => {
 			if (!item || this.validateRawMessage(item) !== true) {
-				throw new Error('Input is not valid');
+				if (this._safeMode !== true) {
+					throw new Error('Input is not valid');
+				}
+				return;
 			}
 			const nmea = item.split(',');
 			const messageFormat:string = nmea[0];
@@ -43,11 +59,17 @@ export class Decoder {
 			// make sure we are facing a supported AIS message
 			// AIVDM for standard messages, AIVDO for messages from own ship AIS
 			if (messageFormat !== Formatter.AIVDM && messageFormat !== Formatter.AIVDO) {
-				throw new Error('Unknown format');
+				if (this._safeMode !== true) {
+					throw new Error('Unknown format');
+				}
+				return;
 			}
 			// check if buffer (data) exist
 			if (!nmea[5]) {
-				throw new Error('Buffer data is not found.');
+				if (this._safeMode !== true) {
+					throw new Error('Buffer data is not found.');
+				}
+				return;
 			}
 
 			// When there's only one message
@@ -65,10 +87,9 @@ export class Decoder {
 				session = {};
 			}
 		});
-		console.log(this.results);
 	}
 
-	decode(input: Array<any>, session: any): void {
+	private decode(input: Array<any>, session: any): void {
 		this.bitarray=[];
     this.valid= false; // will move to 'true' if parsing succeed
 		const messageFormat:string = input[0];
@@ -79,20 +100,32 @@ export class Decoder {
 		let payload;
     if(messageCounter > 1) {
 			if(Object.prototype.toString.call(session) !== "[object Object]") {
-				throw new Error("A session object is required to maintain state for decoding multipart AIS messages.");
+				if (this._safeMode !== true) {
+					throw new Error("A session object is required to maintain state for decoding multipart AIS messages.");
+				}
+				return;
 			}
 
 			if(currentMessageNumber > 1) {
 				if(messageFormat !== session.formatter) {
-					throw new Error("AisDecode: Sentence does not match formatter of current session");
+					if (this._safeMode !== true) {
+						throw new Error("AisDecode: Sentence does not match formatter of current session");
+					}
+					return;
 				}
 
 				if(session[currentMessageNumber - 1] === undefined) {
-					throw new Error("AisDecode: Session is missing prior message part, cannot parse partial AIS message.");
+					if (this._safeMode !== true) {
+						throw new Error("AisDecode: Session is missing prior message part, cannot parse partial AIS message.");
+					}
+					return;
 				}
 
 				if(session.sequence_id !== sequenceId) {
-					throw new Error("AisDecode: Session IDs do not match. Cannot recontruct AIS message.");
+					if (this._safeMode !== true) {
+						throw new Error("AisDecode: Session IDs do not match. Cannot recontruct AIS message.");
+					}
+					return;
 				}
 			} else {
 				session = ([undefined, null].indexOf(session) !== -1) ? undefined : session;
@@ -106,7 +139,10 @@ export class Decoder {
     try {
       payload = new Buffer(input[5]);
     } catch (err) {
-			 throw new Error(err);
+			if (this._safeMode !== true) {
+				throw new Error(err);
+			}
+			return;
     }
 
 
@@ -182,14 +218,14 @@ export class Decoder {
 				report = parseLongRangeAISBroadcastMessage(this.bitarray, aisType, repeat, mmsi);
 				break;
 			default:
-				console.log(`Unsupported AIS Type: ${aisType} - ${mmsi}`);
+				console.error(`Unsupported AIS Type: ${aisType} - ${mmsi}`);
 				break;
 		}
 
 		this.results.push(report);
 	}
 
-	validateRawMessage(input: string): boolean {
+	private validateRawMessage(input: string): boolean {
 		if(Object.prototype.toString.call(input) !== "[object String]") {
 			return false;
 		}

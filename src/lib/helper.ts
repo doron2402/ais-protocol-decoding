@@ -164,7 +164,7 @@ export function fetchSog(bitArray: Array<number>, aisType): number {
       sog = Number(parseFloat(String(0.1 * _sog)).toFixed(Precision));
     }
   } catch (err) {
-    throw new Error(err);
+    console.error(err);
   }
 
   return sog;

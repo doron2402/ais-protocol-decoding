@@ -38,11 +38,20 @@
  ### Important notes:
   - Ais payload is represented in a 6bits encoded string
 
+### API
+  - `constructor(AIS_Messages, safeMode)`
+    - `AIS_Messages`: Array of ais messages.
+    - `safeMode`: set to `false` by default. when true the module will never throw an error (silent mode).
+  - `getResults()` - return a collection of the parse messages
+  - `private decode(input: Array<any>, session: any): void` - decode the raw ais messages
+  - `private validateRawMessage(input: string): boolean` - validate if the raw messages
+
 ### Running example:
   - `npm run example`
 
 ### Example:
 ```javascript
+// new Decoder(Array<AIS_Messages>, safeMode<Boolean>)
 import { Decoder } from '../lib/index';
 const aisMessages:Array<string> = [
   '!AIVDM,1,1,,A,400TcdiuiT7VDR>3nIfr6>i00000,0*78',
@@ -51,7 +60,8 @@ const aisMessages:Array<string> = [
   '!AIVDM,2,1,0,A,58wt8Ui`g??r21`7S=:22058<v05Htp000000015>8OA;0sk,0*7B ',
   '!AIVDM,2,2,0,A,eQ8823mDm3kP00000000000,2*5D',
 ];
-const aisDecoder_ex2 = new Decoder(aisMessages);
+const safeMode = false;
+const aisDecoder_ex2 = new Decoder(aisMessages, safeMode);
 
 // results will hold a collection of the parsed ais messages
 const results = aisDecoder_ex2.getResults();

@@ -181,7 +181,7 @@ const ATTR_META_DATA = {
 		to_starboard: { index: 243, len: 6, units: 'meters' },
 		epfd: { index: 249, len: 4, units: '' },
 		second: { index: 253, len: 6 },
-		off_position: {},
+		off_position: { index: 259, len: 1},
 		regional: { index: 259, len: 1 },
 		raim: { index: 268, len: 1 },
 		virtual_aid: { index: 269, len: 1 },

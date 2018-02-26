@@ -3,7 +3,7 @@
         "outDir": "./dist",
         "allowJs": true,
         "target": "es5",
-        "removeComments": false,
+        "removeComments": true,
         "sourceMap": true,
         "alwaysStrict": true                  /* Parse in strict mode and emit "use strict" for each source file. */
     },
