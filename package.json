@@ -1,6 +1,6 @@
 {
   "name": "ais-decoder-ts",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
   "scripts": {
@@ -9,7 +9,6 @@
     "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run compile",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
-    "install": "npm run compile",
     "compile": "./node_modules/typescript/bin/tsc"
   },
   "keywords": [
