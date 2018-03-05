@@ -121,12 +121,12 @@ export function fetchLatitudeAndLongitude10Deg(bitArray:Array<number>, aisType: 
   if (lon & 0x08000000) {
     lon |= 0xf0000000;
   }
-  lon = parseFloat(String(lon * 0.0009078957452703937));
+  lon = parseFloat(String(lon/1100));
   let lat = fetchIntByAttr(bitArray, aisType, 'lat');
   if(lat & 0x04000000) {
     lat |= 0xf8000000;
   }
-  lat = parseFloat(String(lat * 0.0016654223855739965));
+  lat = parseFloat(String(lat/(600)));
   // Check if valid
   let valid = true;
   if (lon > 180.) {
