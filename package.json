@@ -1,6 +1,6 @@
 {
   "name": "ais-decoder-ts",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "build": "rm -rf dist && tsc && npm run copy_fixture",
     "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run build",
-    "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture"
+    "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
+    "install": "npm run build"
   },
   "keywords": [
     "AIS",
