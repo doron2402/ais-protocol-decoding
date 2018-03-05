@@ -20,11 +20,10 @@
   ],
   "author": "Doron Segal",
   "license": "ISC",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "typescript": "^2.7.2",
-    "@types/node": "^9.4.6"
+    "@types/node": "^9.4.6",
+    "typescript": "^2.7.2"
   },
   "repository": {
     "type": "git",
@@ -33,5 +32,8 @@
   "bugs": {
     "url": "https://github.com/doron2402/ais-protocol-decoding/issues"
   },
-  "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme"
+  "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme",
+  "engines": {
+    "node": ">=6.9"
+  }
 }
