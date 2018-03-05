@@ -56,7 +56,3 @@ typings/
 
 # dotenv environment variables file
 .env
-
-# ignore built type script
-built/
-dist/
