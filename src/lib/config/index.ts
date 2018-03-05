@@ -5,7 +5,9 @@ export const BITS:number = 6;
 
 export enum Formatter {
 	AIVDM = '!AIVDM',
-	AIVDO = '!AIVDO'
+	AIVDO = '!AIVDO',
+	GPRMC = '$GPRMC',
+	GPGGA = '$GPGGA'
 }
 
 export enum VHF_CHANNEL {

@@ -15,7 +15,9 @@ import {
 	parseStandardSARAircraftPositionReport,
 	parseSafetyRelatedBroadcastMessage,
 	parserExtendedClassBCSPositionReport,
-	parseAidNavigationReport
+	parseAidNavigationReport,
+	parseGPRMC,
+	parseGPGGA
 } from './parser';
 
 import { Formatter, VHF_CHANNEL, MESSAGE_PART } from './config';
@@ -36,6 +38,8 @@ export class Decoder {
 	 * and decode them. in order to get the results call `.getResults()`
 	 */
 	constructor(private messages: Array<string>, safeMode?: boolean) {
+		this.results = [];
+		let session:object = {};
 		this._safeMode = safeMode === true ? true : false;
 		if (messages.length < 1) {
 			if (this._safeMode !== true) {
@@ -43,8 +47,7 @@ export class Decoder {
 			}
 			return;
 		}
-		this.results = [];
-		let session:object = {};
+
 		messages.forEach((item) => {
 			if (!item || this.validateRawMessage(item) !== true) {
 				if (this._safeMode !== true) {
@@ -52,44 +55,78 @@ export class Decoder {
 				}
 				return;
 			}
+
 			const nmea = item.split(',');
 			const messageFormat:string = nmea[0];
-			const messageCounter:number = Number(nmea[1]);
-			const currentMessageNumber:number = Number(nmea[2]);
-			// make sure we are facing a supported AIS message
-			// AIVDM for standard messages, AIVDO for messages from own ship AIS
-			if (messageFormat !== Formatter.AIVDM && messageFormat !== Formatter.AIVDO) {
-				if (this._safeMode !== true) {
-					throw new Error('Unknown format');
-				}
-				return;
-			}
-			// check if buffer (data) exist
-			if (!nmea[5]) {
-				if (this._safeMode !== true) {
-					throw new Error('Buffer data is not found.');
-				}
-				return;
-			}
 
-			// When there's only one message
-			// set the session to an empty object
-			if (messageCounter < 2) {
-				// reset session
-				session = {};
-			}
-			// decode message
-			this.decode(nmea, session);
-			// compre the total number of message
-			// and the current message number
-			if (messageCounter === currentMessageNumber) {
-				// reset session
-				session = {};
+			if (messageFormat === Formatter.GPRMC || messageFormat === Formatter.GPGGA) {
+				// GPRMC/GPGGA NMEA message
+				this.decodeNmea(nmea);
+			} else if (messageFormat === Formatter.AIVDM || messageFormat === Formatter.AIVDO) {
+				// AIVDM/AIVDO message
+				const messageCounter:number = Number(nmea[1]);
+				const currentMessageNumber:number = Number(nmea[2]);
+				// make sure we are facing a supported AIS message
+				// AIVDM for standard messages, AIVDO for messages from own ship AIS
+				if (messageFormat !== Formatter.AIVDM && messageFormat !== Formatter.AIVDO) {
+					if (this._safeMode !== true) {
+						throw new Error('Unknown format');
+					}
+					return;
+				}
+				// check if buffer (data) exist
+				if (!nmea[5]) {
+					if (this._safeMode !== true) {
+						throw new Error('Buffer data is not found.');
+					}
+					return;
+				}
+
+				// When there's only one message
+				// set the session to an empty object
+				if (messageCounter < 2) {
+					// reset session
+					session = {};
+				}
+				// decode message AIVDM
+				this.decodeAIVDM(nmea, session);
+				// compre the total number of message
+				// and the current message number
+				if (messageCounter === currentMessageNumber) {
+					// reset session
+					session = {};
+				}
+			} else {
+				// unknown format
+				return;
 			}
 		});
 	}
 
-	private decode(input: Array<any>, session: any): void {
+	private decodeNmea(input: Array<any>): void {
+		let res;
+		switch(input[0]) {
+			case Formatter.GPRMC:
+				res = parseGPRMC(input);
+				this.valid = res.valid === true;
+				if (!!this.valid){
+					this.results.push(res);
+				}
+				break;
+			case Formatter.GPGGA:
+				res = parseGPGGA(input);
+				this.valid = res.valid === true;
+				if (!!this.valid){
+					this.results.push(res);
+				}
+				break;
+			default:
+				this.valid = false;
+		}
+		return;
+	}
+
+	private decodeAIVDM(input: Array<any>, session: any): void {
 		this.bitarray=[];
     this.valid= false; // will move to 'true' if parsing succeed
 		const messageFormat:string = input[0];

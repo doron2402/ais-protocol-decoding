@@ -520,3 +520,27 @@ export interface Long_Range_AIS_Broadcast extends Basic_AIS, LatitudeAndLongitud
   gnss: number, //0 = current GNSS position 1 = not GNSS position (default)
 }
 
+
+/**
+ * GPRMC and GPGGA
+ * Calculating the checksum is very easy. It is the representation of two hexadecimal characters of an XOR of all characters in the sentence between – but not including – the $ and the * character.
+ * Lets assume the following NMEA sentence:
+ * $GPGLL,5300.97914,N,00259.98174,E,125926,A*28
+ * In this sentence the checksum is the character representation of the hexadecimal value 28. The string that the checksum is calculated over is
+ * GPGLL,5300.97914,N,00259.98174,E,125926,A
+ * To calculate the checksum you parse all characters between $ and * from the NMEA sentence into a new string.  In the examples below the name of this new string is stringToCalculateTheChecksumOver. Then just XOR the first character with the next character, until the end of the string.
+ * http://aprs.gids.nl/nmea/#gga
+ * NMEA is an acronym for the National Marine Electronics Association. NMEA existed well before GPS was invented.
+ */
+export interface NMEA {
+  cmd: number, // Tracker
+  mmsi: number,
+  time: number,
+  lat: number,
+  lon: number,
+  sog: number,
+  cog: number,
+  day?: number,
+  alt?: number, //altitude might be missing
+  valid: boolean
+}
