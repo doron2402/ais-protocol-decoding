@@ -106,7 +106,7 @@ extends Basic_AIS, Dimensions {
   imo: number, // IMO ship ID number
   callsign: number, // 7 six-bit characters
   shipname: string, // 20 six-bit characters
-  shiptype: string, // See "VESSEL_TYPE in config"
+  shiptype: number, // See "VESSEL_TYPE in config"
   epfd: string, // See "EPFD Fix Types"
   month: number, // 1-12, 0=N/A (default)
   day: number, // 1-31, 0=N/A (default)
@@ -327,7 +327,7 @@ extends Basic_AIS, LatitudeAndLongitude, Dimensions, Navigation {
   hdg: number, // 0 to 359 degrees, 511 = N/A
   utc: number, // Second of UTC timestamp.
   shipname: string,
-  shiptype: string,
+  shiptype: number,
   epfd: string,
   reserved: number
 }
@@ -455,7 +455,7 @@ export interface Static_Data_Report {
   to_starboard?: number, // Part B Dimension to Starboard (meters)
   partno?: number,
   shipname?: string, // (Part A) 20 sixbit chars
-  shiptype?: string, // Part B See "Ship Types"
+  shiptype?: number, // Part B See "Ship Types"
   vendorid?: number,// Part B 3 six-bit chars
   model?: number, // Part B
   serial?: number, // Part B
