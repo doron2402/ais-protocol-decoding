@@ -3,10 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function parseIntFromBuffer(bitArray, start, len) {
     var acc = 0;
     var cp, cx, c0, cs;
+    if (!Array.isArray(bitArray) || bitArray.length === 0) {
+        return undefined;
+    }
     for (var i = 0; i < len; i++) {
         acc = acc << 1;
         cp = Math.floor((start + i) / 6);
-        cx = bitArray && bitArray[cp] ? bitArray[cp] : 0;
+        cx = bitArray[cp];
         cs = 5 - ((start + i) % 6);
         c0 = (cx >> cs) & 1;
         acc |= c0;
