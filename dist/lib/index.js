@@ -31,15 +31,12 @@ var Decoder = (function () {
             if (messageFormat === config_1.Formatter.GPRMC || messageFormat === config_1.Formatter.GPGGA) {
                 _this.decodeNmea(nmea);
             }
-            else if (messageFormat === config_1.Formatter.AIVDM || messageFormat === config_1.Formatter.AIVDO) {
+            else if (messageFormat === config_1.Formatter.AIVDM ||
+                messageFormat === config_1.Formatter.AIVDO ||
+                messageFormat === config_1.Formatter.BSVDM ||
+                messageFormat === config_1.Formatter.ABVDM) {
                 var messageCounter = Number(nmea[1]);
                 var currentMessageNumber = Number(nmea[2]);
-                if (messageFormat !== config_1.Formatter.AIVDM && messageFormat !== config_1.Formatter.AIVDO) {
-                    if (_this._safeMode !== true) {
-                        throw new Error('Unknown format');
-                    }
-                    return;
-                }
                 if (!nmea[5]) {
                     if (_this._safeMode !== true) {
                         throw new Error('Buffer data is not found.');

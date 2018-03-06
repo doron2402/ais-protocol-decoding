@@ -6,7 +6,7 @@ function parseIntFromBuffer(bitArray, start, len) {
     for (var i = 0; i < len; i++) {
         acc = acc << 1;
         cp = Math.floor((start + i) / 6);
-        cx = bitArray[cp];
+        cx = bitArray && bitArray[cp] ? bitArray[cp] : 0;
         cs = 5 - ((start + i) % 6);
         c0 = (cx >> cs) & 1;
         acc |= c0;

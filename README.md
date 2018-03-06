@@ -21,6 +21,7 @@
     - https://en.wikipedia.org/wiki/Automatic_identification_system
   - OpenCPN
     - Github: https://github.com/OpenCPN/OpenCPN/blob/45504f35c005ed1ffcd117c67797279da42d53ae/src/AIS_Decoder.cpp
+  - http://arundale.com/docs/ais/ais_decoder.html
 
 
 ### AIS MESSAGES

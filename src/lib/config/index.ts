@@ -7,7 +7,9 @@ export enum Formatter {
 	AIVDM = '!AIVDM',
 	AIVDO = '!AIVDO',
 	GPRMC = '$GPRMC',
-	GPGGA = '$GPGGA'
+	GPGGA = '$GPGGA',
+	BSVDM = '!BSVDM',
+	ABVDM = '!ABVDM'
 }
 
 export enum VHF_CHANNEL {
