@@ -34,7 +34,7 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
     for(var j=0 ; j < 6 ; j++){
       acc  = acc << 1;
       cp =   Math.floor((start + i) / 6);
-      cx = bitArray[cp];
+      cx = bitArray && bitArray[cp] ? bitArray[cp] : 0;
       cs = 5 - ((start + i) % 6);
       c0 = (cx >> (5 - ((start + i) % 6))) & 1;
       acc |= c0;
