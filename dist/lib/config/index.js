@@ -8,6 +8,8 @@ var Formatter;
     Formatter["AIVDO"] = "!AIVDO";
     Formatter["GPRMC"] = "$GPRMC";
     Formatter["GPGGA"] = "$GPGGA";
+    Formatter["BSVDM"] = "!BSVDM";
+    Formatter["ABVDM"] = "!ABVDM";
 })(Formatter = exports.Formatter || (exports.Formatter = {}));
 var VHF_CHANNEL;
 (function (VHF_CHANNEL) {

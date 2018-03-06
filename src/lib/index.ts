@@ -62,18 +62,17 @@ export class Decoder {
 			if (messageFormat === Formatter.GPRMC || messageFormat === Formatter.GPGGA) {
 				// GPRMC/GPGGA NMEA message
 				this.decodeNmea(nmea);
-			} else if (messageFormat === Formatter.AIVDM || messageFormat === Formatter.AIVDO) {
+			} else if (
+				messageFormat === Formatter.AIVDM ||
+				messageFormat === Formatter.AIVDO ||
+				messageFormat === Formatter.BSVDM ||
+				messageFormat === Formatter.ABVDM
+			) {
 				// AIVDM/AIVDO message
 				const messageCounter:number = Number(nmea[1]);
 				const currentMessageNumber:number = Number(nmea[2]);
 				// make sure we are facing a supported AIS message
 				// AIVDM for standard messages, AIVDO for messages from own ship AIS
-				if (messageFormat !== Formatter.AIVDM && messageFormat !== Formatter.AIVDO) {
-					if (this._safeMode !== true) {
-						throw new Error('Unknown format');
-					}
-					return;
-				}
 				// check if buffer (data) exist
 				if (!nmea[5]) {
 					if (this._safeMode !== true) {

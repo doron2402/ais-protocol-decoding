@@ -27,3 +27,5 @@ const msg2:Array<string> = [
 ];
 const aisDecoder_ex3 = new Decoder(msg2);
 console.log(aisDecoder_ex3.getResults());
+
+
