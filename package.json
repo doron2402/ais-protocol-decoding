@@ -9,7 +9,8 @@
     "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run compile",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
-    "compile": "./node_modules/typescript/bin/tsc"
+    "compile": "./node_modules/typescript/bin/tsc",
+    "postinstall": "npm run build"
   },
   "keywords": [
     "AIS",
