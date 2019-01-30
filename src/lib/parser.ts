@@ -120,7 +120,7 @@ export function parseStaticVoyageRelatedData(
   const report = {
 		repeat,
 		mmsi,
-		callsign: fetchIntByAttr(bitArray, aisType, 'callsign'),
+		callsign: fetchStringByAttr(bitArray, aisType, 'callsign'),
 		shipname: fetchStringByAttr(bitArray, aisType, 'shipname'),
 		shiptype: fetchIntByAttr(bitArray, aisType, 'shiptype'),
 		imo: fetchIntByAttr(bitArray, aisType, 'imo'),
@@ -376,7 +376,7 @@ export function parseStaticDataReport(
 			vendorid: fetchIntByAttr(bitArray, aisType, 'vendorid'),
 			model: fetchIntByAttr(bitArray, aisType, 'model'),
 			serial: fetchIntByAttr(bitArray, aisType, 'serial'),
-			callsign: fetchIntByAttr(bitArray, aisType, 'callsign'),
+			callsign: fetchStringByAttr(bitArray, aisType, 'callsign'),
 			to_bow,
 			to_port,
 			to_starboard,

@@ -459,7 +459,7 @@ export interface Static_Data_Report {
   vendorid?: number,// Part B 3 six-bit chars
   model?: number, // Part B
   serial?: number, // Part B
-  callsign?: number, // Part B As in Message Type 5
+  callsign?: string, // Part B As in Message Type 5
   mothership_mmsi?: string // Part B
 }
 
