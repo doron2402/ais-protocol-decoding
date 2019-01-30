@@ -60,4 +60,3 @@ typings/
 # editor configuration
 .vscode
 dist/
-.history/
