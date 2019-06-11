@@ -1,10 +1,10 @@
 {
   "name": "ais-decoder-ts",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build && ./node_modules/tape/bin/tape dist/test/**/*.test.js",
     "build": "rm -rf ./dist && ./node_modules/.bin/tsc && npm run copy_fixture",
     "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run compile",
@@ -27,8 +27,10 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^9.4.6",
-    "typescript": "^2.7.2"
+    "@types/node": "^12.0.7",
+    "@types/tape": "^4.2.33",
+    "tape": "^4.10.2",
+    "typescript": "^3.5.1"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,6 @@
   },
   "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme",
   "engines": {
-    "node": ">=6.9"
+    "node": ">=6.17.1"
   }
 }
