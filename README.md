@@ -74,8 +74,6 @@ const results = aisDecoder_ex2.getResults();
 ```
 
 ### TODO:
- - Tests (tests are always good)
- - Add unit and e2e tests with fixtures
  - Parse Latitude and Longitude for Type 27
 
 ### Bugs & PR's
