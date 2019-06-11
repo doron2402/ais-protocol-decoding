@@ -104,7 +104,7 @@ export interface Static_Voyage_Related_Data
 extends Basic_AIS, Dimensions {
   ais_version: number,
   imo: number, // IMO ship ID number
-  callsign: number, // 7 six-bit characters
+  callsign: string, // 7 six-bit characters
   shipname: string, // 20 six-bit characters
   shiptype: number, // See "VESSEL_TYPE in config"
   epfd: string, // See "EPFD Fix Types"
@@ -459,7 +459,7 @@ export interface Static_Data_Report {
   vendorid?: number,// Part B 3 six-bit chars
   model?: number, // Part B
   serial?: number, // Part B
-  callsign?: number, // Part B As in Message Type 5
+  callsign?: string, // Part B As in Message Type 5
   mothership_mmsi?: string // Part B
 }
 
