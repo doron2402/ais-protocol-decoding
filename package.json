@@ -6,12 +6,12 @@
   "scripts": {
     "setup": "npm install",
     "test-only": "tape dist/test/**/*.test.js",
-    "test": "npm run build && ./node_modules/tape/bin/tape dist/test/**/*.test.js",
+    "test": "npm run build && tape dist/test/**/*.test.js",
     "build": "rm -rf ./dist && tsc",
     "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run compile",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
-    "compile": "./node_modules/typescript/bin/tsc",
+    "compile": "tsc",
     "postinstall": "npm run build"
   },
   "keywords": [

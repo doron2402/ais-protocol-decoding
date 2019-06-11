@@ -13,6 +13,7 @@ node_js:
 sudo: false
 
 install:
+  - "npm i -g typescript@3.5.1"
   - "npm install"
 
 os:
