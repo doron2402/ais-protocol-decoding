@@ -1,15 +1,14 @@
 language: node_js
 
 os:
-    - linux
-    - osx
-    - windows
+  - linux
+  - osx
+  - windows
 
 node_js:
   - "8"
   - "10"
   - "12"
-  - "node"
 
 sudo: false
 
@@ -20,3 +19,10 @@ os:
   - "linux"
   - "osx"
   - "windows"
+
+before_script:
+  - npm run setup
+  - npm run build
+
+script:
+  - npm run test-only
