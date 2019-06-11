@@ -38,7 +38,7 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
       cp =   Math.floor((start + i) / 6);
       cx = bitArray[cp];
       cs = 5 - ((start + i) % 6);
-      c0 = (cx >> (5 - ((start + i) % 6))) & 1;
+      c0 = (cx >> cs) & 1;
       acc |= c0;
       i++;
     }

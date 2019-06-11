@@ -6,6 +6,10 @@
   avoidance for water transport.
 
 
+[![Build Status](https://travis-ci.org/doron2402/ais-protocol-decoding.svg?branch=master)](https://travis-ci.org/doron2402/ais-protocol-decoding)
+
+
+
  ### References:
   - Gov:
     - https://www.navcen.uscg.gov/?pageName=AISMessagesA
