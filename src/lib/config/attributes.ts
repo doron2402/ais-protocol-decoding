@@ -7,9 +7,10 @@ const ATTR_META_DATA = {
 		lon: { index: 61, len: 28, units: 'degree' },
 		lat: { index: 89, len: 27, units: 'degree' },
 		hdg: { index: 128, len: 9, units: 'degrees' },
+		utc: { index: 137, len: 6, units: 'seconds' },
 		status: { index: 38, len: 4 },
 		accuracy: { index: 60, len: 1, units: 'meters' },
-		raim: { index: 148, len: 1 }
+		raim: { index: 148, len: 1 },
 	},
 	4: {
 		type: { index: 0, len: 6 },

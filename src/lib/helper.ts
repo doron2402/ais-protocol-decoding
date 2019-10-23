@@ -9,7 +9,7 @@ import {
 } from './config';
 import { getMetaDataForAttributeByReport } from './config/attributes';
 import { parseIntFromBuffer, parseStringFromBuffer } from './bitsHelper';
-import { LatLngResponse, DATE_AND_TIME, Dimensions } from './interfaces/ais';
+import { LatLngResponse, DATE_AND_TIME, Dimensions, TimestampInterface } from './interfaces/ais';
 
 export function fetchIntByAttr(bitArray: Array<number>, aisType:number, attr: string): number {
   const meta = getMetaDataForAttributeByReport(aisType)[attr];
@@ -36,6 +36,40 @@ export function getDimensions(bitArray: Array<number>, aisType:number): Dimensio
     to_port: fetchIntByAttr(bitArray, aisType, 'to_port'),
     to_starboard: fetchIntByAttr(bitArray, aisType, 'to_starboard'),
   };
+}
+
+export function parseUTCTimestamp(value:number): TimestampInterface {
+  const timestampObj: TimestampInterface = {
+    value: value,
+    unix_seconds: (new Date().getTime() + (value*1000))/1000,
+    date: new Date(new Date().getTime() + (value*1000)),
+    mode: 'available'
+  };
+
+
+
+  // Seconds in UTC timestamp should be 0-59, except for these special values
+  switch (value) {
+    case 60:
+      // 60 if timestamp is not available (default)
+      timestampObj.mode = 'not available';
+      break;
+    case 61:
+      // 61 if positioning system is in manual input mode
+      timestampObj.mode = 'manual mode';
+      break;
+    case 62:
+      // 62 if Electronic Position Fixing System operates in estimated (dead reckoning) mode,
+      timestampObj.mode = 'dead reckoning';
+      break;
+    case 63:
+      // 63 if the positioning system is inoperative
+      timestampObj.mode = 'inoperative';
+      break;
+  }
+
+  return timestampObj;
+
 }
 
 export function decodePayloadToBitArray(input:Array<number>): Array<number> {

@@ -13,6 +13,8 @@ if (!input) {
   process.exit(1);
 }
 
+console.log(`Processing message: ${input}`);
+
 const aisRawMessages = [input];
 const aisDecoder = new Decoder(aisRawMessages);
 console.log(aisDecoder.getResults());

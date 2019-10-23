@@ -12,7 +12,8 @@
     "prepublish": "npm run compile",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
     "compile": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "parse": "tsc && node ./dist/bin/parse.js"
   },
   "keywords": [
     "AIS",
@@ -21,7 +22,7 @@
     "AIVDM",
     "AIVDO",
     "NMEA",
-    "Ocean"
+    "Ocean",
     "GPRMC",
     "GPGGA",
     "BSVDM",
