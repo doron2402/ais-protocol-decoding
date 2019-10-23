@@ -1,6 +1,6 @@
 {
   "name": "ais-decoder-ts",
-  "version": "1.2.2",
+  "version": "2.0.0",
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
   "scripts": {
@@ -12,7 +12,8 @@
     "prepublish": "npm run compile",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
     "compile": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "parse": "tsc && node ./dist/bin/parse.js"
   },
   "keywords": [
     "AIS",
@@ -20,6 +21,8 @@
     "Ocean",
     "AIVDM",
     "AIVDO",
+    "NMEA",
+    "Ocean",
     "GPRMC",
     "GPGGA",
     "BSVDM",
@@ -43,6 +46,6 @@
   },
   "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme",
   "engines": {
-    "node": ">=6.17.1"
+    "node": ">=8.16.2"
   }
 }

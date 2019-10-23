@@ -12,24 +12,6 @@
 
 ### Tests : run `npm test`
 
- ### References:
-  - Gov:
-    - https://www.navcen.uscg.gov/?pageName=AISMessagesA
-  - Gpsd:
-    - http://catb.org/gpsd/AIVDM.html [best doc]
-  - OpenCPN:
-    - https://github.com/OpenCPN/OpenCPN [file: AIS_Bitstring.cpp]
- 		- http://fossies.org/linux/misc/gpsd-3.11.tar.gz/gpsd-3.11/test/sample.aivdm
-  - online AIS decoder:
-    - http://www.maritec.co.za/tools/aisvdmvdodecoding/
-    - http://www.maritec.co.za/aisvdmvdodecoding1.php
-  - Wikipedia:
-    - https://en.wikipedia.org/wiki/Automatic_identification_system
-  - OpenCPN
-    - Github: https://github.com/OpenCPN/OpenCPN/blob/45504f35c005ed1ffcd117c67797279da42d53ae/src/AIS_Decoder.cpp
-  - http://arundale.com/docs/ais/ais_decoder.html
-
-
 ### AIS MESSAGES
   1. Position[0] `format`: !AIVDM, identifies this as an AIVDM packet (AIS format).
   2. Position[1] `message_count`:  Messages counter (number of messages), sometimes the ais messages will be split over several messages.
@@ -45,6 +27,7 @@
  ### Important notes:
   - Ais payload is represented in a 6bits encoded string
 
+
 ### API
   - `constructor(AIS_Messages, safeMode)`
     - `AIS_Messages`: Array of ais messages.
@@ -52,6 +35,11 @@
   - `getResults()` - return a collection of the parse messages
   - `private decode(input: Array<any>, session: any): void` - decode the raw ais messages
   - `private validateRawMessage(input: string): boolean` - validate if the raw messages
+
+
+### Command Line:
+  - `node dist/bin/parse <ais message>` for example: `node ./dist/bin/parse "!AIVDM,1,1,,A,13u?etPv2;0n:dDPwUM1U1Cb069D,0*24"`
+
 
 ### Running example:
   - `npm run example`
@@ -75,8 +63,22 @@ const results = aisDecoder_ex2.getResults();
 
 ```
 
-### TODO:
- - Parse Latitude and Longitude for Type 27
+ ### References:
+  - Gov:
+    - https://www.navcen.uscg.gov/?pageName=AISMessagesA
+  - Gpsd:
+    - https://gpsd.gitlab.io/gpsd/AIVDM.html [recommended]
+  - OpenCPN:
+    - https://github.com/OpenCPN/OpenCPN [file: AIS_Bitstring.cpp]
+ 		- http://fossies.org/linux/misc/gpsd-3.11.tar.gz/gpsd-3.11/test/sample.aivdm
+  - online AIS decoder:
+    - http://www.maritec.co.za/tools/aisvdmvdodecoding/
+    - http://www.maritec.co.za/aisvdmvdodecoding1.php
+  - Wikipedia:
+    - https://en.wikipedia.org/wiki/Automatic_identification_system
+  - OpenCPN
+    - Github: https://github.com/OpenCPN/OpenCPN/blob/45504f35c005ed1ffcd117c67797279da42d53ae/src/AIS_Decoder.cpp
+
 
 ### Bugs & PR's
  - If you find any bug please feel free to open an issue. PR are always welcome.

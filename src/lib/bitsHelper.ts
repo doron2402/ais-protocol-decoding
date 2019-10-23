@@ -23,7 +23,7 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
     console.log('Extended messages are not fully supported');
   }
 
-  let buffer = new Buffer(20);
+  let buffer = Buffer.alloc(20);
   let cp: number;
   let cx: number;
   let cs: number;

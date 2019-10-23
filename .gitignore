@@ -57,7 +57,9 @@ typings/
 # dotenv environment variables file
 .env
 
-# editor configuration
-.vscode
+# dist
 dist/
+
+# IDE
+.vscode/
 .history/

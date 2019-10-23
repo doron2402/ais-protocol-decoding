@@ -17,7 +17,8 @@ import {
 	fetchDisplayFlag,
 	fetchDateAndTime,
 	fetchLatitudeAndLongitude10Deg,
-	fetchAidType
+	fetchAidType,
+	parseUTCTimestamp
 } from './helper';
 import {
 	Position_Report_Class_A,
@@ -45,7 +46,6 @@ export function parsePositionReportClassA(
   mmsi: string
 ): Position_Report_Class_A {
 	const aisClass:string = 'A';
-	const navStatus = parseIntFromBuffer(bitArray, 38, 4);
 	const { latitude, longitude, valid } = getLatAndLng(bitArray, aisType);
 	const sog = fetchSog(bitArray, aisType);
 	const rot = fetchRateOfTurn(bitArray, aisType);
@@ -53,7 +53,7 @@ export function parsePositionReportClassA(
 	const hdg = fetchHeading(bitArray, aisType);
 	const status = fetchNavigationStatus(bitArray, aisType);
 	const accuracy = fetchIntByAttr(bitArray, aisType, 'accuracy') === 1 ? 1 : 0;
-	const utc:number = 0;
+	const utc:number = parseUTCTimestamp(fetchIntByAttr(bitArray, aisType, 'utc')).unix_seconds;
 	const maneuver: string = '0';
 	const raim = fetchIntByAttr(bitArray, aisType, 'raim') === 1 ? 1 : 0;
 	const report = {
@@ -72,6 +72,7 @@ export function parsePositionReportClassA(
 		utc,
 		maneuver,
 		raim,
+		class: aisClass,
 	};
 	return report;
 }
