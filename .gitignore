@@ -60,7 +60,6 @@ typings/
 # dist
 dist/
 
-# Vscode
+# IDE
 .vscode/
-
-
+.history/

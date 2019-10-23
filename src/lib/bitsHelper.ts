@@ -3,7 +3,9 @@
 export function parseIntFromBuffer(bitArray: Array<number>, start: number, len: number): number {
   let acc = 0;
 	let cp:number, cx: number, c0:number, cs:number;
-
+  if (!Array.isArray(bitArray) || bitArray.length === 0) {
+    return undefined;
+  }
   for(var i=0 ; i<len ; i++) {
     acc  = acc << 1;
     cp = Math.floor((start + i) / 6);
@@ -36,7 +38,7 @@ export function parseStringFromBuffer(bitArray: Array<number>, start: number, le
       cp =   Math.floor((start + i) / 6);
       cx = bitArray[cp];
       cs = 5 - ((start + i) % 6);
-      c0 = (cx >> (5 - ((start + i) % 6))) & 1;
+      c0 = (cx >> cs) & 1;
       acc |= c0;
       i++;
     }

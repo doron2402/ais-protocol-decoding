@@ -1,0 +1,29 @@
+language: node_js
+
+os:
+  - linux
+  - osx
+  - windows
+
+node_js:
+  - "6"
+  - "8"
+  - "10"
+
+sudo: false
+
+install:
+  - "npm i -g typescript@3.5.1"
+  - "npm install"
+
+os:
+  - "linux"
+  - "osx"
+  - "windows"
+
+before_script:
+  - npm run setup
+  - npm run build
+
+script:
+  - npm run test-only

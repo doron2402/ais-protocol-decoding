@@ -12,6 +12,7 @@
         "./src/test/fixture/*.*"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "dist"
     ]
 }

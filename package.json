@@ -4,27 +4,37 @@
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf ./dist && ./node_modules/.bin/tsc && npm run copy_fixture",
+    "setup": "npm install",
+    "test-only": "tape dist/test/**/*.test.js",
+    "test": "npm run build && tape dist/test/**/*.test.js",
+    "build": "rm -rf ./dist && tsc",
     "example": "npm run build && node dist/test/example.js",
     "prepublish": "npm run compile",
     "copy_fixture": "cp -rf ./src/test/fixture ./dist/test/fixture",
-    "compile": "./node_modules/typescript/bin/tsc"
+    "compile": "tsc",
+    "postinstall": "npm run build"
   },
   "keywords": [
     "AIS",
     "Ais-Decoder",
+    "Ocean",
     "AIVDM",
     "AIVDO",
     "NMEA",
     "Ocean"
+    "GPRMC",
+    "GPGGA",
+    "BSVDM",
+    "ABVDM"
   ],
   "author": "Doron Segal",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^9.4.6",
-    "typescript": "^2.7.2"
+    "@types/node": "^12.0.7",
+    "@types/tape": "^4.2.33",
+    "tape": "^4.10.2",
+    "typescript": "^3.5.1"
   },
   "repository": {
     "type": "git",
@@ -35,6 +45,6 @@
   },
   "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme",
   "engines": {
-    "node": ">=8.16.0"
+    "node": ">=8.16.2"
   }
 }

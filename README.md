@@ -6,6 +6,12 @@
   avoidance for water transport.
 
 
+[![Build Status](https://travis-ci.org/doron2402/ais-protocol-decoding.svg?branch=master)](https://travis-ci.org/doron2402/ais-protocol-decoding)
+
+### Ideal Node Version : 6.17.1
+
+### Tests : run `npm test`
+
 ### AIS MESSAGES
   1. Position[0] `format`: !AIVDM, identifies this as an AIVDM packet (AIS format).
   2. Position[1] `message_count`:  Messages counter (number of messages), sometimes the ais messages will be split over several messages.
