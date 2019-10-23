@@ -174,7 +174,7 @@ export class Decoder {
 
 		// extract binary payload and other usefull information from nmea paquet
     try {
-      payload = new Buffer(input[5]);
+      payload = Buffer.from(input[5]);
     } catch (err) {
 			if (this._safeMode !== true) {
 				throw new Error(err);

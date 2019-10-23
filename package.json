@@ -1,6 +1,6 @@
 {
   "name": "ais-decoder-ts",
-  "version": "1.1.3",
+  "version": "2.0.0",
   "description": "Ais Decoder (TypeScript)",
   "main": "dist/lib/index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "Ais-Decoder",
     "AIVDM",
     "AIVDO",
+    "NMEA",
     "Ocean"
   ],
   "author": "Doron Segal",
@@ -34,6 +35,6 @@
   },
   "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme",
   "engines": {
-    "node": ">=6.9"
+    "node": ">=8.16.0"
   }
 }
