@@ -8,7 +8,7 @@
 
 [![Build Status](https://travis-ci.org/doron2402/ais-protocol-decoding.svg?branch=master)](https://travis-ci.org/doron2402/ais-protocol-decoding)
 
-### Ideal Node Version : 6.17.1
+### Ideal Node Version : 8.16.2
 
 ### Tests : run `npm test`
 
