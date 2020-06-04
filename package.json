@@ -1,7 +1,7 @@
 {
   "name": "ais-decoder-ts",
-  "version": "2.0.1",
-  "description": "Ais Decoder (TypeScript)",
+  "version": "3.0.0",
+  "description": "Ais Decoder (TypeScript, Node 12.17.0)",
   "main": "dist/lib/index.js",
   "scripts": {
     "setup": "npm install",
@@ -32,10 +32,10 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^12.0.7",
-    "@types/tape": "^4.2.33",
-    "tape": "^4.10.2",
-    "typescript": "^3.5.1"
+    "@types/node": "^14.0.10",
+    "@types/tape": "^4.13.0",
+    "tape": "^5.0.1",
+    "typescript": "^3.9.5"
   },
   "repository": {
     "type": "git",
