@@ -226,5 +226,6 @@ export function getMetaDataForAttributeByReport(report: number): any {
 	else if ([4, 11].indexOf(report) !== -1) {
 		return ATTR_META_DATA[4];
 	}
+	// @ts-ignore
 	return ATTR_META_DATA[report] ? ATTR_META_DATA[report] : {};
 }

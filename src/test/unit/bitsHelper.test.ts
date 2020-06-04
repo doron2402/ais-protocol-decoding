@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as test from "tape";
 
 import { parseIntFromBuffer,

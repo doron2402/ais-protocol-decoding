@@ -11,7 +11,7 @@ const FILE_SAMPLE_2 = './fixture/sample3.txt';
 const aisArray:Array<string> = fs.readFileSync(path.resolve(__dirname, FILE_SAMPLE_2))
   .toString()
   .split('\n')
-  .filter(v => v !== '');
+  .filter((v: any) => v !== '');
 
 const aisDecoder_ex2 = new Decoder(aisArray);
 console.log(aisDecoder_ex2.getResults());

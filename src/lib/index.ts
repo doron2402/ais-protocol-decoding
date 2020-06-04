@@ -132,6 +132,7 @@ export class Decoder {
 		const messageCounter:number = Number(input[1]);
 		const currentMessageNumber:number = Number(input[2]);
 		const sequenceId:number = input[3] && input[3].length > 0 ? Number(input[3]) : NaN;
+		// @ts-ignore
 		const channel = VHF_CHANNEL[input[4]]; // vhf channel A/B
 		let payload;
     if(messageCounter > 1) {
@@ -201,6 +202,7 @@ export class Decoder {
 			payload = Buffer.concat(payloads, len);
     }
 
+		// @ts-check
 		this.bitarray = decodePayloadToBitArray(payload);
 
     const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);

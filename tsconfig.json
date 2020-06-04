@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "outDir": "./dist",
+        "noImplicitAny": true,
         "allowJs": true,
         "target": "es5",
         "removeComments": true,

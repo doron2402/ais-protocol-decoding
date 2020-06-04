@@ -72,7 +72,7 @@ export function parseUTCTimestamp(value:number): TimestampInterface {
 
 }
 
-export function decodePayloadToBitArray(input:Array<number>): Array<number> {
+export function decodePayloadToBitArray(input: Uint8Array): Array<number> {
   let bitarray = [];
   // decode printable 6bit AIS/IEC binary format
   for(let i = 0; i < input.length; i++) {
@@ -179,7 +179,7 @@ export function fetchLatitudeAndLongitude10Deg(bitArray:Array<number>, aisType: 
   };
 }
 
-export function fetchSog(bitArray: Array<number>, aisType): number {
+export function fetchSog(bitArray: Array<number>, aisType:number): number {
   /**
    * Speed over ground is in 0.1-knot resolution from 0 to 102 knots.
    * Value 1023 indicates speed is not available,
