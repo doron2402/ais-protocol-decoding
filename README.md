@@ -1,3 +1,6 @@
+## this fork:
+  Provides basic Windows compatibility
+
 ## AIS Decoder
   The automatic identification system (AIS) is an automatic
   Tracking system used on ships and by vessel traffic services (VTS).
