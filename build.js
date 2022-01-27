@@ -1,4 +1,13 @@
 const fs = require('fs')
 
-fs.rmdirSync("dist", { recursive: true });
-
+fs.rm("dist", { recursive:true }, (err) => {
+    if(err){
+        // File deletion failed
+        // console.error(err.message);
+        return;
+    }
+    // console.log("File deleted successfully");
+      
+    // List files after deleting
+    // getCurrentFilenames();
+})
