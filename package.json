@@ -1,6 +1,6 @@
 {
   "name": "ais-decoder-ts",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "description": "Ais Decoder (TypeScript, Node 12.17.0)",
   "main": "dist/lib/index.js",
   "scripts": {
@@ -39,12 +39,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/doron2402/ais-protocol-decoding.git"
+    "url": "git+https://github.com/EngageFCP/ais-protocol-decoding.git"
   },
   "bugs": {
-    "url": "https://github.com/doron2402/ais-protocol-decoding/issues"
+    "url": "https://github.com/EngageFCP/ais-protocol-decoding/issues"
   },
-  "homepage": "https://github.com/doron2402/ais-protocol-decoding#readme",
+  "homepage": "https://github.com/EngageFCP/ais-protocol-decoding#readme",
   "engines": {
     "node": ">=8.16.2"
   }
