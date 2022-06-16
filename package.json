@@ -1,6 +1,6 @@
 {
   "name": "ais-decoder-ts",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "description": "Ais Decoder (TypeScript, Node 12.17.0)",
   "main": "dist/lib/index.js",
   "scripts": {
