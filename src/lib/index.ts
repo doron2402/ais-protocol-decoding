@@ -208,6 +208,7 @@ export class Decoder {
     const aisType: number = parseIntFromBuffer(this.bitarray, 0,6);
     const repeat : number = parseIntFromBuffer(this.bitarray, 6,2);
     const immsi  : number = parseIntFromBuffer(this.bitarray, 8,30);
+    const part  : number = parseIntFromBuffer(this.bitarray, 38,2);
 		const mmsi	 : string = ("000000000" + immsi).slice(-9);
 		let report;
 
@@ -249,10 +250,11 @@ export class Decoder {
 				report = parseAidNavigationReport(this.bitarray, aisType, repeat, mmsi);
 				break;
 			case 24:
-				const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
-				report = parseStaticDataReport(this.bitarray, aisType, repeat, part, mmsi)
+				// const part = session.sequence_id === 1 ? MESSAGE_PART.A : MESSAGE_PART.B;
+				const partAB = part === 0 ? MESSAGE_PART.A : MESSAGE_PART.B;
+				report = parseStaticDataReport(this.bitarray, aisType, repeat, partAB, mmsi)
 				break;
-			case 27:
+				case 27:
 				report = parseLongRangeAISBroadcastMessage(this.bitarray, aisType, repeat, mmsi);
 				break;
 			default:
